@@ -5,6 +5,7 @@ GLuint vao;
 GLuint vbo_gl;
 struct cudaGraphicsResource* vbo_cuda;
 size_t resource_size;
+size_t resource_count;
 size_t vertex_num;
 
 GLuint texture_gl;
@@ -16,10 +17,10 @@ GLuint vertexShaderId;
 const char* vertex_shader[] = {
 "#version 330"
 
-"layout(location = 0) in vec4 position;"
+"layout(location = 0) in vec2 position;"
 
 "void main() {"
-    "gl_Position = vec4(position.x, position.y, position.z, 1.0);"
+    "gl_Position = vec4(position.x, position.y, 1.0, 1.0);"
 "}"
 };
 
@@ -102,8 +103,9 @@ void freeGL()
 	glDeleteShader(fragmentShaderId);
 }
 
-void register_array(unsigned size, unsigned vnum)
+void register_array(unsigned count, unsigned size, unsigned vnum)
 {
+	resource_count = (size_t)count;
 	resource_size = (size_t)size;
 	vertex_num = (size_t)vnum;
 	
@@ -113,7 +115,7 @@ void register_array(unsigned size, unsigned vnum)
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_gl);
 
 	// Actually allocate memory
-	glBufferData(GL_ARRAY_BUFFER, size, NULL, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, size * count, NULL, GL_DYNAMIC_DRAW);
 
 	// Tell OpenGl we are done with the array
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -156,18 +158,18 @@ void * map_resource()
 	return resource_ptr;
 }
 
-void draw_points()
+void draw(int type)
 {
 	// Tell OpenGL which array contains the data
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_gl);
  	// Specify how the data for position can be accessed
- 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, resource_size / vertex_num, 0);
- 	glVertexAttribPointer(1, 1, GL_FLOAT, GL_TRUE, 16, (void *)(3*sizeof(GLfloat)));
+ 	glVertexAttribPointer(0, resource_count / vertex_num, GL_FLOAT, GL_FALSE, 0, 0);
+ 	//glVertexAttribPointer(1, 1, GL_FLOAT, GL_TRUE, 16, (void *)(3*sizeof(GLfloat)));
  	// Enable the attribute
  	glEnableVertexAttribArray(0);
 
 	// Draw
-	glDrawArrays(GL_POINTS, 0, vertex_num);
+	glDrawArrays(type, 0, vertex_num);
 	
 	// Disable array
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -183,7 +185,7 @@ void unmap_and_draw()
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	draw_points();
+	draw(GL_LINE_STRIP);
 	
 	/*glBindTexture(GL_TEXTURE_2D, texture_gl); 
 	
