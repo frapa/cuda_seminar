@@ -188,7 +188,7 @@ __global__ void stepSimulation2D(float *T, float *K, float *dT, unsigned n_loop,
 	// local id without borders
 	unsigned lid_1d_nb = threadIdx.y * lw + threadIdx.x;
 
-    // declare dynamically allocated shared memory
+    	// declare dynamically allocated shared memory
 	extern __shared__ float local_T[];
 	
 	// create a struct to pass around all our nice constants

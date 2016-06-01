@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <time.h>
 
 #include "tiffio.h"
 
@@ -9,12 +10,14 @@
 #include "gl_helper.h"
 
 // global constants
-unsigned w, h, n_loop;
+unsigned w, h, n_loop, loop_done;
 float heating_level = 0;
 dim3 block_num, thread_num;
 size_t size_shared;
 float *dT;
 float *T_device, *K_device, *dT_device, *tmp;
+double cpu_time, cpu_step;
+
 
 void readTiff(char *filename, float **raster, unsigned *w, unsigned *h, float scale)
 {
@@ -78,16 +81,23 @@ void on_key_pressed(unsigned char key, int x, int y)
 
 void step()
 {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	float *texture = (float *) map_texture();
-
+	
+	clock_t start_host, end_host;
+	start_host = clock();
 	stepSimulation2D<<<block_num, thread_num, size_shared>>>
 	    (T_device, K_device, dT_device, n_loop, texture);
-
+	
+	end_host=clock();	
+	cpu_step = ((double)  (end_host - start_host));
+	cpu_time += cpu_step / CLOCKS_PER_SEC;
+	loop_done += 1;
+	
 	unmap_and_draw();
 	
-    glutSwapBuffers();
+	glutSwapBuffers();
 	glutPostRedisplay();
 }
 
@@ -166,14 +176,20 @@ int main(int argc, char **argv)
 
 	// Now that we are done loading the simulation, we start OpenGL
 	initGL(&argc, argv, "Heat equation", step);
+	register_texture(w, h);
 	glutKeyboardFunc(on_key_pressed);
 	
 	//register_array(n * 2, sizeof(float), n);
 
-    // Start simulation
+	// Start simulation
+	loop_done = 0;
+	cpu_time = 0;
 	glutMainLoop();
-
-    // cleanup
+	
+	// Print time statistics
+	printf("Total Time: %f\n", cpu_time);
+	printf("Mean Time per Step: %f\n", cpu_time/(double)loop_done);
+	// cleanup
 	free(T);
 	free(K);
 	free(dT);
