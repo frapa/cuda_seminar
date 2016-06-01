@@ -17,7 +17,7 @@ void step()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);    
     
-	float2 *vertices = (float2 *) map_resource();
+	float2 *vertices = (float2 *) map_array();
 
 	stepSimulation<<<n/thread_num, thread_num, size_shared>>>(T_device, K, vertices);
 

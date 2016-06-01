@@ -21,39 +21,39 @@ unsigned char enabled_mask;
 
 // ---------------------------------------------------------------------------------------------------------------
 GLuint vertexShaderId;
-const char* vertex_shader[] = {
-"#version 330\n"
-
-"layout(location = 0) in vec2 position;\n"
-"out vec2 texCoord;\n"
-
-"void main() {\n"
-    "texCoord = vec2(position.x/2 + 0.5, position.y/2 + 0.5);\n"
-    "gl_Position = vec4(position.x, position.y, 1.0, 1.0);\n"
-"}\n"
-};
-
-// ---------------------------------------------------------------------------------------------------------------
 GLuint fragmentShaderId;
-const char* fragment_shader[] = {
-"#version 330\n"
-
-"out vec4 colorOut;\n"
-"uniform sampler2D texture;\n"
-"in vec2 texCoord;\n"
-
-"void main() {\n"
-"    colorOut = vec4(1.0, 0.0, 0.0, 1.0);\n" //texture2D(texture, texCoord)\n"
-"}\n"
-};
-// ---------------------------------------------------------------------------------------------------------------
 GLuint shaderProgram;
 // ---------------------------------------------------------------------------------------------------------------
 
+// return arra must be freed.
+char * readIntoArray(const char *filename)
+{
+	FILE *f = fopen(filename, "r");
+
+	// measure file length
+	struct stat st;
+	if(stat(filename, &st) != 0) {
+		printf("Error while reading shader: %s. errno for stat: %i\n", filename, errno);
+		return 0;
+	}
+	printf("'%s' size: %li bytes\n", filename, st.st_size);
+
+	// allocate memory
+  	char *buffer = (char *)malloc(st.st_size * sizeof(char));	
+
+	// read whole file inside memory
+	fread(buffer, 1, st.st_size, f);
+
+	fclose(f);
+
+	return buffer;
+}
+
 void initShaders()
 {
+	char *vertex_shader = readIntoArray("shaders/vertex.vert");
 	vertexShaderId = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShaderId, 1, vertex_shader, NULL);
+	glShaderSource(vertexShaderId, 1, (const char **)&vertex_shader, NULL);
 	glCompileShader(vertexShaderId);
 	
 	GLint success = 1;
@@ -65,15 +65,16 @@ void initShaders()
 		printf("Vertex shader error: %s\n", infoLog);
 	}
 
+	char *fragment_shader = readIntoArray("shaders/fragment.frag");
 	fragmentShaderId = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShaderId, 1, fragment_shader, NULL);
+	glShaderSource(fragmentShaderId, 1, (const char **)&fragment_shader, NULL);
 	glCompileShader(fragmentShaderId);
 	
 	glGetShaderiv(fragmentShaderId, GL_COMPILE_STATUS, &success);
 
 	if (success == GL_FALSE) {
 		glGetShaderInfoLog(vertexShaderId, 1000, NULL, infoLog);
-		printf("Fragement shader error: %s\n", infoLog);
+		printf("Fragment shader error: %s\n", infoLog);
 	}
 
 	shaderProgram = glCreateProgram();
@@ -84,6 +85,9 @@ void initShaders()
 	glLinkProgram(shaderProgram);
 
 	glUseProgram(shaderProgram);
+
+	free(vertex_shader);
+	free(fragment_shader);
 }
 
 void initGL(int *argc, char **argv, const char* title, void (*display_func)(), int width, int height, char fullscreen)
@@ -172,6 +176,19 @@ void register_texture(unsigned w, unsigned h)
 
 	// Register texture for use with cuda
 	cudaError_t error = cudaGraphicsGLRegisterImage(&texture_cuda, texture_gl, GL_TEXTURE_2D, cudaGraphicsMapFlagsWriteDiscard);
+	return;
+	// This is needed because we need geometry on which to show the texture
+	// Tell OpenGL we want to allocate array
+	glGenBuffers(1, &vbo_tex);
+	// Tell OpenGL we eant to modify the state of the following array
+	glBindBuffer(GL_ARRAY_BUFFER, vbo_tex);
+
+	// Copy vertex data inside
+	GLfloat vertex_data[8] = {-1.f, -1.f, 1.f, -1.f, -1.f, 1.f, 1.f, 1.f};
+	glBufferData(vbo_tex, sizeof(vertex_data), vertex_data, GL_STATIC_DRAW);
+
+	// Tell OpenGl we are done with the array
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void * map_array()
@@ -194,20 +211,6 @@ void * map_texture()
 	cudaGraphicsMapResources(1, &texture_cuda, 0);
 	// Get pointer of the texture
 	cudaGraphicsResourceGetMappedPointer(&texture_ptr, &texture_size, texture_cuda);
-	
-	// This is needed because we need geometry on which to show the texture
-	// Tell OpenGL we want to allocate array
-	size_t size = 8*sizeof(float);
-	glGenBuffers(1, &vbo_tex);
-	// Tell OpenGL we eant to modify the state of the following array
-	glBindBuffer(GL_ARRAY_BUFFER, vbo_tex);
-	// Actually allocate memory
-	glBufferData(GL_ARRAY_BUFFER, size, NULL, GL_STATIC_DRAW);
-	// Copy vertex data inside
-	float vertex_data[8] = {-1.f, -1.f, 1.f, -1.f, -1.f, 1.f, 1.f, 1.f};
-	glBufferData(vbo_tex, size, vertex_data, GL_STATIC_DRAW);
-	// Tell OpenGl we are done with the array
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	
 	enabled_mask |= 0x02;
 
@@ -240,15 +243,30 @@ void draw_texture()
 	// Assign texture unit index to the fragment shader
 	glUniform1i(1, 0); // location = 1, texture unit = 0*/
 	
+	// This is needed because we need geometry on which to show the texture
+	// Tell OpenGL we want to allocate array
+	glGenBuffers(1, &vbo_tex);
+	// Tell OpenGL we eant to modify the state of the following array
+	glBindBuffer(GL_ARRAY_BUFFER, vbo_tex);
+
+	// Copy vertex data inside
+	GLfloat vertex_data[8] = {-1.f, -1.f, 1.f, -1.f, -1.f, 1.f, 1.f, 1.f};
+	glBufferData(vbo_tex, sizeof(vertex_data), vertex_data, GL_STATIC_DRAW);
+	printf("%u\n", sizeof(vertex_data));
+
+	// Tell OpenGl we are done with the array
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	
 	// Tell OpenGL which array contains the data
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_tex);
- 	// Specify how the data for position can be accessed
- 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, 0);
  	// Enable the attribute
  	glEnableVertexAttribArray(0); // location = 0
+ 	// Specify how the data for position can be accessed
+ 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 
 	// Draw
-	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glDrawArrays(GL_LINE_STRIP, 0, 2); //GL_TRIANGLE_STRIP, 0, 3);
 	
 	// Disable array
 	glBindBuffer(GL_ARRAY_BUFFER, 0);

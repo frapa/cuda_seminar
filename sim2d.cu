@@ -166,6 +166,7 @@ int main(int argc, char **argv)
 
 	// Now that we are done loading the simulation, we start OpenGL
 	initGL(&argc, argv, "Heat equation", step);
+	register_texture(w, h);
 	glutKeyboardFunc(on_key_pressed);
 	
 	//register_array(n * 2, sizeof(float), n);
