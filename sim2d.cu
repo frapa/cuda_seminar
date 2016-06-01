@@ -78,7 +78,7 @@ void on_key_pressed(unsigned char key, int x, int y)
 
 void step()
 {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	float *texture = (float *) map_texture();
 
@@ -87,7 +87,7 @@ void step()
 
 	unmap_and_draw();
 	
-    glutSwapBuffers();
+	glutSwapBuffers();
 	glutPostRedisplay();
 }
 
