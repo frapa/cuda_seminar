@@ -66,6 +66,7 @@ void initShaders()
 	}
 
 	char *fragment_shader = readIntoArray("shaders/fragment.frag");
+	printf("%s\n%u\n", fragment_shader, strlen(fragment_shader));
 	fragmentShaderId = glCreateShader(GL_FRAGMENT_SHADER);
 	glShaderSource(fragmentShaderId, 1, (const char **)&fragment_shader, NULL);
 	glCompileShader(fragmentShaderId);
@@ -73,7 +74,7 @@ void initShaders()
 	glGetShaderiv(fragmentShaderId, GL_COMPILE_STATUS, &success);
 
 	if (success == GL_FALSE) {
-		glGetShaderInfoLog(vertexShaderId, 1000, NULL, infoLog);
+		glGetShaderInfoLog(fragmentShaderId, 1000, NULL, infoLog);
 		printf("Fragment shader error: %s\n", infoLog);
 	}
 
@@ -176,7 +177,7 @@ void register_texture(unsigned w, unsigned h)
 
 	// Register texture for use with cuda
 	cudaError_t error = cudaGraphicsGLRegisterImage(&texture_cuda, texture_gl, GL_TEXTURE_2D, cudaGraphicsMapFlagsWriteDiscard);
-	return;
+	
 	// This is needed because we need geometry on which to show the texture
 	// Tell OpenGL we want to allocate array
 	glGenBuffers(1, &vbo_tex);
@@ -184,8 +185,8 @@ void register_texture(unsigned w, unsigned h)
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_tex);
 
 	// Copy vertex data inside
-	GLfloat vertex_data[8] = {-1.f, -1.f, 1.f, -1.f, -1.f, 1.f, 1.f, 1.f};
-	glBufferData(vbo_tex, sizeof(vertex_data), vertex_data, GL_STATIC_DRAW);
+	GLfloat vertex_data[] = {-1.f, -1.f, 1.f, -1.f, -1.f, 1.f, 1.f, 1.f};
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_data), vertex_data, GL_STATIC_DRAW);
 
 	// Tell OpenGl we are done with the array
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -237,36 +238,21 @@ void draw_array(int type)
 void draw_texture()
 {
     // Select texture unit
-    /*glActiveTexture(GL_TEXTURE0);
+    glActiveTexture(GL_TEXTURE0);
     // Tell OpenGL which texture to use
 	glBindTexture(GL_TEXTURE_2D, texture_gl);
 	// Assign texture unit index to the fragment shader
-	glUniform1i(1, 0); // location = 1, texture unit = 0*/
-	
-	// This is needed because we need geometry on which to show the texture
-	// Tell OpenGL we want to allocate array
-	glGenBuffers(1, &vbo_tex);
-	// Tell OpenGL we eant to modify the state of the following array
-	glBindBuffer(GL_ARRAY_BUFFER, vbo_tex);
-
-	// Copy vertex data inside
-	GLfloat vertex_data[8] = {-1.f, -1.f, 1.f, -1.f, -1.f, 1.f, 1.f, 1.f};
-	glBufferData(vbo_tex, sizeof(vertex_data), vertex_data, GL_STATIC_DRAW);
-	printf("%u\n", sizeof(vertex_data));
-
-	// Tell OpenGl we are done with the array
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	
+	glUniform1i(1, 0); // location = 1, texture unit = 0
+		
 	// Tell OpenGL which array contains the data
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_tex);
+ 	// Specify how the data for position can be accessed
+ 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, NULL);
  	// Enable the attribute
  	glEnableVertexAttribArray(0); // location = 0
- 	// Specify how the data for position can be accessed
- 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 
 	// Draw
-	glDrawArrays(GL_LINE_STRIP, 0, 2); //GL_TRIANGLE_STRIP, 0, 3);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	
 	// Disable array
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -283,11 +269,11 @@ void unmap_and_draw()
 
 	    draw_array(GL_LINE_STRIP);
     } else if (enabled_mask & 0x02) {
-	    /*cudaError_t error = cudaGraphicsUnmapResources(1, &texture_cuda, 0);
+	    cudaError_t error = cudaGraphicsUnmapResources(1, &texture_cuda, 0);
 
 	    if (error != cudaSuccess) {
 		    printf("GPU error: %s\n", cudaGetErrorString(error));
-	    }*/
+	    }
 
 	    draw_texture();
     }
