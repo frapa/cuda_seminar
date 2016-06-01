@@ -1,5 +1,5 @@
 NVCC = nvcc
-CFLAGS = -I. -g
+CFLAGS = -I. -g -L/usr/local/cuda-6.5/targets/x86_64-linux/lib/
 LIBS = -lGL -lGLU -lglut -lGLEW -ltiff -lcuda -lcudart 
 
 DEPS = gl_helper.h integrator.h 
