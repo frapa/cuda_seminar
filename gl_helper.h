@@ -10,6 +10,9 @@ extern "C" {
 
 #include <stdio.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <errno.h>
+#include <unistd.h>
 //#include "cudagl.h"
 #include "cuda_gl_interop.h"  // put this back again
 
@@ -19,6 +22,8 @@ void initGL(int *argc, char **argv, const char* title, void (*display_func)(), i
 void freeGL();
 // Register resource shared between OpenGl and CUDA
 void register_array(unsigned count, unsigned size, unsigned vnum);
+// Register texture shared between OpenGl and CUDA
+void register_texture(unsigned w, unsigned h);
 // Map and return array resource
 void * map_array();
 // Map and return texture resource
