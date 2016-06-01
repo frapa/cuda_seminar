@@ -207,7 +207,7 @@ void * map_texture()
 {
 	void *texture_ptr;
 
-    // Enables access from CUDA
+	// Enables access from CUDA
 	cudaGraphicsMapResources(1, &texture_cuda, 0);
 	// Get pointer of the texture
 	cudaGraphicsResourceGetMappedPointer(&texture_ptr, &texture_size, texture_cuda);

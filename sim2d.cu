@@ -116,7 +116,7 @@ int main(int argc, char **argv)
 	// read files
 	float *T, *K, *dT;
 	readTiff(temperature, &T, &w, &h, 1);
-    readTiff(conductivity, &K, &w, &h, 1);
+	readTiff(conductivity, &K, &w, &h, 1);
 	readTiff(heating, &dT, &w, &h, 1);
 	printf("Simulation size: %ux%u\n", w, h);
 	
@@ -171,10 +171,10 @@ int main(int argc, char **argv)
 	
 	//register_array(n * 2, sizeof(float), n);
 
-    // Start simulation
+	// Start simulation
 	glutMainLoop();
 
-    // cleanup
+	// cleanup
 	free(T);
 	free(K);
 	free(dT);
