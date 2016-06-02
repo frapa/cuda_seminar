@@ -10,7 +10,9 @@
 #include "gl_helper.h"
 
 // global constants
-unsigned w, h, n_loop, loop_done;
+/* watch saves the step number to be controlled 
+ */
+unsigned w, h, n_loop, loop_done, watch;
 float heating_level = 0;
 dim3 block_num, thread_num;
 size_t size_shared;
@@ -84,13 +86,34 @@ void step()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	float *texture = (float *) map_texture();
+	clock_t start_host, end_host; // Used to check time of execution
+	int i;
 	
-	clock_t start_host, end_host;
 	start_host = clock();
 	stepSimulation2D<<<block_num, thread_num, size_shared>>>
 	    (T_device, K_device, dT_device, n_loop, texture);
 	cudaDeviceSynchronize();
 	end_host=clock();	
+	
+	// Copy data for controlling the correct execution of the simulation
+	float *T_check;
+	T_check = (float*)malloc(temp_size);
+	
+	if (loop_done == watch){
+	  cudaMemcpy(T_check, T_device, temp_size, cudaMemcpyDeviceToHost);	
+	  
+	  FILE *ftemp ;
+	  ftemp = fopen("check/temperature.txt", "w");
+	  
+	  for (i=512*256; i<512*256+512; i++){
+	      fprintf(ftemp, "%f ", T_check[i]);
+	      fprintf(ftemp, "\n\n\n");
+	  }
+	  for (i=0; i<512; i++){
+	      fprintf(ftemp, "%f ", T_check[256+i*512]);
+	  }
+	}
+	
 	cpu_step = ((double)  (end_host - start_host));
 	cpu_time += cpu_step / CLOCKS_PER_SEC;
 	loop_done += 1;
@@ -142,6 +165,9 @@ int main(int argc, char **argv)
 	        } else if (!strcmp(argv[j], "-n")) {
 		        sscanf(argv[j+1], "%u", &n_loop);
 	        }
+	        } else if (!strcmp(argv[j], "-l")) {
+		        sscanf(argv[j+1], "%u", &watch);
+	        }
 	    }
 	}
 	printf("-------------------------\n");
@@ -189,6 +215,7 @@ int main(int argc, char **argv)
 	// Print time statistics
 	printf("Total Time: %f\n", cpu_time);
 	printf("Mean Time per Step: %f\n", cpu_time/(double)loop_done);
+	
 	// cleanup
 	free(T);
 	free(K);

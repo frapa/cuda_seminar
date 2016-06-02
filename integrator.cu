@@ -210,7 +210,7 @@ __global__ void stepSimulation2D(float *T, float *K, float *dT, unsigned n_loop,
 	// carry out the integration
 	integrate2D(consts, T, K, dT);
 
-	// compy data back to global memory and fill the texture for visualization with OpenGL
+	// copy data back to global memory and fill the texture for visualization with OpenGL
 	//copyBackData2D(consts, T);
 	__syncthreads();
 }
