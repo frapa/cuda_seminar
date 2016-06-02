@@ -8,6 +8,8 @@
 #include "integrator.h"
 #include "gl_helper.h"
 
+#define DEBUG
+
 // global constants
 unsigned w, h, n_loop;
 float heating_level = 0;
@@ -15,6 +17,7 @@ dim3 block_num, thread_num;
 size_t size_shared;
 float *dT;
 float *T_device, *K_device, *dT_device, *tmp;
+uchar4 *image;
 
 void readTiff(char *filename, float **raster, unsigned *w, unsigned *h, float scale)
 {
@@ -80,10 +83,21 @@ void step()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	float *texture = (float *) map_texture();
+	cudaArray *tex = map_texture();
 
 	stepSimulation2D<<<block_num, thread_num, size_shared>>>
-	    (T_device, K_device, dT_device, n_loop, texture);
+	    (T_device, K_device, dT_device, n_loop, image);
+
+
+#ifdef DEBUG	
+	cudaError_t error = cudaDeviceSynchronize();
+
+	if (error != cudaSuccess) {
+		printf("Error while running kernel: %s\n", cudaGetErrorString(error));
+	}
+#endif
+
+	cudaMemcpyToArray(tex, 0, 0, image, w*h*4, cudaMemcpyDeviceToDevice);
 
 	unmap_and_draw();
 	
@@ -116,7 +130,7 @@ int main(int argc, char **argv)
 	// read files
 	float *T, *K, *dT;
 	readTiff(temperature, &T, &w, &h, 1);
-	readTiff(conductivity, &K, &w, &h, 1);
+	readTiff(conductivity, &K, &w, &h, 0.0001);
 	readTiff(heating, &dT, &w, &h, 1);
 	printf("Simulation size: %ux%u\n", w, h);
 	
@@ -164,8 +178,14 @@ int main(int argc, char **argv)
 	cudaMalloc(&dT_device, param_size);
 	cudaMemcpy(dT_device, dT, param_size, cudaMemcpyHostToDevice);
 
+	cudaMalloc(&image, w*h*4);
+
 	// Now that we are done loading the simulation, we start OpenGL
 	initGL(&argc, argv, "Heat equation", step);
+
+	cudaSetDevice(0);
+	cudaGLSetGLDevice(0);
+
 	register_texture(w, h);
 	glutKeyboardFunc(on_key_pressed);
 	

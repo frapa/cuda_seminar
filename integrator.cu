@@ -151,17 +151,21 @@ __device__ void loadSharedMemory2D(const UsefulConstants consts, float *T)
 }
 
 
-__device__ void copyBackData2D(const UsefulConstants consts, float *T)
+__device__ void drawToTexture(const UsefulConstants consts, float * T, uchar4 *tex)
 {
 	// Did I already say it's just a repetition?
-	/*float *local_result = consts.local_result;
+	int2 gid = consts.gid;
+	unsigned gw = consts.gw - 2; 
 	unsigned gid_1d = consts.gid_1d;
-	unsigned lid_1d_nb = consts.lid_1d_nb;
 	
-	unsigned i;
+	unsigned i, idx;
 	for (i = 0; i < consts.n_loop; ++i) {
-		T[gid_1d + i] = local_result[lid_1d_nb + i];
-	}*/
+		idx = gid.y * gw + gid.x + i;
+		tex[idx].x = T[gid_1d + i];
+		tex[idx].y = T[gid_1d + i];
+		tex[idx].z = T[gid_1d + i];
+		tex[idx].w = 255;
+	}
 }
 
 /*
@@ -174,7 +178,7 @@ __device__ void copyBackData2D(const UsefulConstants consts, float *T)
 
 // blockDim.x * blockDim.y * gridDim.x * gridDim.y * n_loop should be exacly the length of
 // T - 2 * (gridDim.x * blockDim.x + gridDim.y * blockDim.y) - 4 (subtraction of something for the boundaries)
-__global__ void stepSimulation2D(float *T, float *K, float *dT, unsigned n_loop, float *tex) {
+__global__ void stepSimulation2D(float *T, float *K, float *dT, unsigned n_loop, uchar4 *tex) {
 	// Calculate some constants useful around
 	int2 gid;
 	gid.x = (blockIdx.x * blockDim.x + threadIdx.x) * n_loop;
@@ -211,6 +215,6 @@ __global__ void stepSimulation2D(float *T, float *K, float *dT, unsigned n_loop,
 	integrate2D(consts, T, K, dT);
 
 	// compy data back to global memory and fill the texture for visualization with OpenGL
-	//copyBackData2D(consts, T);
+	drawToTexture(consts, T, tex);
 	__syncthreads();
 }
