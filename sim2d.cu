@@ -20,12 +20,9 @@ dim3 block_num, thread_num;
 size_t size_shared;
 float *dT;
 float *T_device, *K_device, *dT_device, *tmp;
-<<<<<<< HEAD
 uchar4 *image;
-=======
 double cpu_time, cpu_step;
-
->>>>>>> 052241825a70c15754471e5abd6423137fbb8a02
+size_t temp_size;
 
 void readTiff(char *filename, float **raster, unsigned *w, unsigned *h, float scale)
 {
@@ -92,26 +89,18 @@ void step()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	cudaArray *tex = map_texture();
+    clock_t start_host, end_host; // Used to check time of execution
+	int i;
 
+    start_host = clock();
 	stepSimulation2D<<<block_num, thread_num, size_shared>>>
 	    (T_device, K_device, dT_device, n_loop, image);
-
-#ifdef DEBUG	
 	cudaError_t error = cudaDeviceSynchronize();
+	end_host=clock();
 
 	if (error != cudaSuccess) {
 		printf("Error while running kernel: %s\n", cudaGetErrorString(error));
 	}
-#endif
-
-    clock_t start_host, end_host; // Used to check time of execution
-	int i;
-	
-	start_host = clock();
-	stepSimulation2D<<<block_num, thread_num, size_shared>>>
-	    (T_device, K_device, dT_device, n_loop, texture);
-	cudaDeviceSynchronize();
-	end_host=clock();	
 	
 	// Copy data for controlling the correct execution of the simulation
 	float *T_check;
@@ -184,7 +173,6 @@ int main(int argc, char **argv)
 		        sscanf(argv[j+1], "%u", &square_side);
 	        } else if (!strcmp(argv[j], "-n")) {
 		        sscanf(argv[j+1], "%u", &n_loop);
-	        }
 	        } else if (!strcmp(argv[j], "-l")) {
 		        sscanf(argv[j+1], "%u", &watch);
 	        }
@@ -197,7 +185,7 @@ int main(int argc, char **argv)
 	
 	// for heating
 	size_t param_size = w * h * sizeof(float);
-	size_t temp_size = (w + 2) * (h + 2) * sizeof(float);
+	temp_size = (w + 2) * (h + 2) * sizeof(float);
 	tmp = (float *) malloc(param_size);
 	
 	// dimensions of grid, blocks and shared memory
