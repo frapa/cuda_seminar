@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <time.h>
 
 #include "tiffio.h"
 
@@ -11,13 +12,20 @@
 #define DEBUG
 
 // global constants
-unsigned w, h, n_loop;
+/* watch saves the step number to be controlled 
+ */
+unsigned w, h, n_loop, loop_done, watch;
 float heating_level = 0;
 dim3 block_num, thread_num;
 size_t size_shared;
 float *dT;
 float *T_device, *K_device, *dT_device, *tmp;
+<<<<<<< HEAD
 uchar4 *image;
+=======
+double cpu_time, cpu_step;
+
+>>>>>>> 052241825a70c15754471e5abd6423137fbb8a02
 
 void readTiff(char *filename, float **raster, unsigned *w, unsigned *h, float scale)
 {
@@ -81,13 +89,12 @@ void on_key_pressed(unsigned char key, int x, int y)
 
 void step()
 {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	cudaArray *tex = map_texture();
 
 	stepSimulation2D<<<block_num, thread_num, size_shared>>>
 	    (T_device, K_device, dT_device, n_loop, image);
-
 
 #ifdef DEBUG	
 	cudaError_t error = cudaDeviceSynchronize();
@@ -97,11 +104,43 @@ void step()
 	}
 #endif
 
+    clock_t start_host, end_host; // Used to check time of execution
+	int i;
+	
+	start_host = clock();
+	stepSimulation2D<<<block_num, thread_num, size_shared>>>
+	    (T_device, K_device, dT_device, n_loop, texture);
+	cudaDeviceSynchronize();
+	end_host=clock();	
+	
+	// Copy data for controlling the correct execution of the simulation
+	float *T_check;
+	T_check = (float*)malloc(temp_size);
+	
+	if (loop_done == watch){
+	  cudaMemcpy(T_check, T_device, temp_size, cudaMemcpyDeviceToHost);	
+	  
+	  FILE *ftemp ;
+	  ftemp = fopen("check/temperature.txt", "w");
+	  
+	  for (i=512*256; i<512*256+512; i++){
+	      fprintf(ftemp, "%f ", T_check[i]);
+	      fprintf(ftemp, "\n\n\n");
+	  }
+	  for (i=0; i<512; i++){
+	      fprintf(ftemp, "%f ", T_check[256+i*512]);
+	  }
+	}
+	
+	cpu_step = ((double)  (end_host - start_host));
+	cpu_time += cpu_step / CLOCKS_PER_SEC;
+	loop_done += 1;
+
 	cudaMemcpyToArray(tex, 0, 0, image, w*h*4, cudaMemcpyDeviceToDevice);
 
 	unmap_and_draw();
 	
-    glutSwapBuffers();
+	glutSwapBuffers();
 	glutPostRedisplay();
 }
 
@@ -145,6 +184,9 @@ int main(int argc, char **argv)
 		        sscanf(argv[j+1], "%u", &square_side);
 	        } else if (!strcmp(argv[j], "-n")) {
 		        sscanf(argv[j+1], "%u", &n_loop);
+	        }
+	        } else if (!strcmp(argv[j], "-l")) {
+		        sscanf(argv[j+1], "%u", &watch);
 	        }
 	    }
 	}
@@ -192,8 +234,14 @@ int main(int argc, char **argv)
 	//register_array(n * 2, sizeof(float), n);
 
 	// Start simulation
+	loop_done = 0;
+	cpu_time = 0;
 	glutMainLoop();
-
+	
+	// Print time statistics
+	printf("Total Time: %f\n", cpu_time);
+	printf("Mean Time per Step: %f\n", cpu_time/(double)loop_done);
+	
 	// cleanup
 	free(T);
 	free(K);
