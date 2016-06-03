@@ -19,6 +19,7 @@ size_t size_shared;
 float *dT;
 float *T_device, *K_device, *dT_device, *tmp;
 double cpu_time, cpu_step;
+size_t temp_size;
 
 
 void readTiff(char *filename, float **raster, unsigned *w, unsigned *h, float scale)
@@ -89,12 +90,6 @@ void step()
 	clock_t start_host, end_host; // Used to check time of execution
 	int i;
 	
-	start_host = clock();
-	stepSimulation2D<<<block_num, thread_num, size_shared>>>
-	    (T_device, K_device, dT_device, n_loop, texture);
-	cudaDeviceSynchronize();
-	end_host=clock();	
-	
 	// Copy data for controlling the correct execution of the simulation
 	float *T_check;
 	T_check = (float*)malloc(temp_size);
@@ -107,12 +102,19 @@ void step()
 	  
 	  for (i=512*256; i<512*256+512; i++){
 	      fprintf(ftemp, "%f ", T_check[i]);
-	      fprintf(ftemp, "\n\n\n");
 	  }
+	  fprintf(ftemp, "\n\n\n");
 	  for (i=0; i<512; i++){
 	      fprintf(ftemp, "%f ", T_check[256+i*512]);
 	  }
+	  fclose(ftemp);
 	}
+	
+	start_host = clock();
+	stepSimulation2D<<<block_num, thread_num, size_shared>>>
+	    (T_device, K_device, dT_device, n_loop, texture);
+	cudaDeviceSynchronize();
+	end_host=clock();	
 	
 	cpu_step = ((double)  (end_host - start_host));
 	cpu_time += cpu_step / CLOCKS_PER_SEC;
@@ -153,6 +155,18 @@ int main(int argc, char **argv)
 	readTiff(heating, &dT, &w, &h, 1);
 	printf("Simulation size: %ux%u\n", w, h);
 	
+	FILE *ftemp ;
+	ftemp = fopen("check/initial.txt", "w");
+	int i; 
+	for (i=512*256; i<512*256+512; i++){
+	    fprintf(ftemp, "%f ", T[i]);
+	}
+	fprintf(ftemp, "\n\n\n");
+	for (i=0; i<512; i++){
+	    fprintf(ftemp, "%f ", T[256+i*512]);
+	}
+	fclose(ftemp);
+	
 	// Setup other interesting stuff
 	// Parse other command line arguments
 	unsigned square_side = 64;
@@ -164,7 +178,6 @@ int main(int argc, char **argv)
 		        sscanf(argv[j+1], "%u", &square_side);
 	        } else if (!strcmp(argv[j], "-n")) {
 		        sscanf(argv[j+1], "%u", &n_loop);
-	        }
 	        } else if (!strcmp(argv[j], "-l")) {
 		        sscanf(argv[j+1], "%u", &watch);
 	        }
@@ -177,7 +190,7 @@ int main(int argc, char **argv)
 	
 	// for heating
 	size_t param_size = w * h * sizeof(float);
-	size_t temp_size = (w + 2) * (h + 2) * sizeof(float);
+	temp_size = (w + 2) * (h + 2) * sizeof(float);
 	tmp = (float *) malloc(param_size);
 	
 	// dimensions of grid, blocks and shared memory
