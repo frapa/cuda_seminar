@@ -9,15 +9,25 @@
 #include "integrator.h"
 #include "gl_helper.h"
 
+#define DEBUG
+
 // global constants
-unsigned w, h, n_loop, loop_done;
+/* watch saves the step number to be controlled 
+ */
+unsigned w, h, n_loop, loop_done, watch;
 float heating_level = 0;
 dim3 block_num, thread_num;
 size_t size_shared;
 float *dT;
 float *T_device, *K_device, *dT_device, *tmp;
+uchar4 *image;
 double cpu_time, cpu_step;
+size_t temp_size;
 
+/*<<<<<<< HEAD
+
+=======
+>>>>>>> 56b0444d4890b3e8e6940f72fdaffd6344cf5cc5*/
 
 void readTiff(char *filename, float **raster, unsigned *w, unsigned *h, float scale)
 {
@@ -83,18 +93,55 @@ void step()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	float *texture = (float *) map_texture();
+	cudaArray *tex = map_texture();
+    clock_t start_host, end_host; // Used to check time of execution
+	int i;
+<<<<<<< HEAD
+=======
+
+    start_host = clock();
+	stepSimulation2D<<<block_num, thread_num, size_shared>>>
+	    (T_device, K_device, dT_device, n_loop, image);
+	cudaError_t error = cudaDeviceSynchronize();
+	end_host=clock();
+
+	if (error != cudaSuccess) {
+		printf("Error while running kernel: %s\n", cudaGetErrorString(error));
+	}
+>>>>>>> 56b0444d4890b3e8e6940f72fdaffd6344cf5cc5
 	
-	clock_t start_host, end_host;
+	// Copy data for controlling the correct execution of the simulation
+	float *T_check;
+	T_check = (float*)malloc(temp_size);
+	
+	if (loop_done == watch){
+	  cudaMemcpy(T_check, T_device, temp_size, cudaMemcpyDeviceToHost);	
+	  
+	  FILE *ftemp ;
+	  ftemp = fopen("check/temperature.txt", "w");
+	  
+	  for (i=512*256; i<512*256+512; i++){
+	      fprintf(ftemp, "%f ", T_check[i]);
+	  }
+	  fprintf(ftemp, "\n\n\n");
+	  for (i=0; i<512; i++){
+	      fprintf(ftemp, "%f ", T_check[256+i*512]);
+	  }
+	  fclose(ftemp);
+	}
+	
 	start_host = clock();
 	stepSimulation2D<<<block_num, thread_num, size_shared>>>
 	    (T_device, K_device, dT_device, n_loop, texture);
-	
+	cudaDeviceSynchronize();
 	end_host=clock();	
+	
 	cpu_step = ((double)  (end_host - start_host));
 	cpu_time += cpu_step / CLOCKS_PER_SEC;
 	loop_done += 1;
-	
+
+	cudaMemcpyToArray(tex, 0, 0, image, w*h*4, cudaMemcpyDeviceToDevice);
+
 	unmap_and_draw();
 	
 	glutSwapBuffers();
@@ -126,9 +173,21 @@ int main(int argc, char **argv)
 	// read files
 	float *T, *K, *dT;
 	readTiff(temperature, &T, &w, &h, 1);
-	readTiff(conductivity, &K, &w, &h, 1);
+	readTiff(conductivity, &K, &w, &h, 0.0001);
 	readTiff(heating, &dT, &w, &h, 1);
 	printf("Simulation size: %ux%u\n", w, h);
+	
+	FILE *ftemp ;
+	ftemp = fopen("check/initial.txt", "w");
+	int i; 
+	for (i=512*256; i<512*256+512; i++){
+	    fprintf(ftemp, "%f ", T[i]);
+	}
+	fprintf(ftemp, "\n\n\n");
+	for (i=0; i<512; i++){
+	    fprintf(ftemp, "%f ", T[256+i*512]);
+	}
+	fclose(ftemp);
 	
 	// Setup other interesting stuff
 	// Parse other command line arguments
@@ -141,6 +200,8 @@ int main(int argc, char **argv)
 		        sscanf(argv[j+1], "%u", &square_side);
 	        } else if (!strcmp(argv[j], "-n")) {
 		        sscanf(argv[j+1], "%u", &n_loop);
+	        } else if (!strcmp(argv[j], "-l")) {
+		        sscanf(argv[j+1], "%u", &watch);
 	        }
 	    }
 	}
@@ -151,7 +212,7 @@ int main(int argc, char **argv)
 	
 	// for heating
 	size_t param_size = w * h * sizeof(float);
-	size_t temp_size = (w + 2) * (h + 2) * sizeof(float);
+	temp_size = (w + 2) * (h + 2) * sizeof(float);
 	tmp = (float *) malloc(param_size);
 	
 	// dimensions of grid, blocks and shared memory
@@ -174,8 +235,14 @@ int main(int argc, char **argv)
 	cudaMalloc(&dT_device, param_size);
 	cudaMemcpy(dT_device, dT, param_size, cudaMemcpyHostToDevice);
 
+	cudaMalloc(&image, w*h*4);
+
 	// Now that we are done loading the simulation, we start OpenGL
 	initGL(&argc, argv, "Heat equation", step);
+
+	cudaSetDevice(0);
+	cudaGLSetGLDevice(0);
+
 	register_texture(w, h);
 	glutKeyboardFunc(on_key_pressed);
 	
@@ -189,6 +256,7 @@ int main(int argc, char **argv)
 	// Print time statistics
 	printf("Total Time: %f\n", cpu_time);
 	printf("Mean Time per Step: %f\n", cpu_time/(double)loop_done);
+	
 	// cleanup
 	free(T);
 	free(K);

@@ -56,6 +56,10 @@ typedef struct {
 	float *local_T;
 } UsefulConstants;
 
+
+/*******************************************************************************
+ * INTEGRATE 2D
+ *******************************************************************************/
 __device__ void integrate2D(const UsefulConstants consts, float *T, float *K, float *dT)
 {
 	// Same boring thing to save typing
@@ -79,8 +83,13 @@ __device__ void integrate2D(const UsefulConstants consts, float *T, float *K, fl
 	}
 }
 
-// Copies to shared memory the temperature in each point for faster access.
-// Does some fancy stuff to fill the boundaries.
+
+/*******************************************************************************
+ * LOAD SHARED MEMORY 2D
+ *******************************************************************************
+ * Copies to shared memory the temperature in each point for faster access.
+ * Does some fancy stuff to fill the boundaries.
+ */
 __device__ void loadSharedMemory2D(const UsefulConstants consts, float *T)
 {
 	// for economy of chars
@@ -99,7 +108,6 @@ __device__ void loadSharedMemory2D(const UsefulConstants consts, float *T)
 
 	// We have lots of pixels to be copied at the border...
 	// We assume here that the block is a square
-
 	// Number of border pixels copied by each thread:
 	unsigned c = 4 * n_loop / blockDim.y;
 	// scalar index of the thread inside a block, starting from 0
@@ -151,40 +159,60 @@ __device__ void loadSharedMemory2D(const UsefulConstants consts, float *T)
 }
 
 
-__device__ void copyBackData2D(const UsefulConstants consts, float *T)
+__device__ void drawToTexture(const UsefulConstants consts, float * T, uchar4 *tex)
 {
 	// Did I already say it's just a repetition?
-	/*float *local_result = consts.local_result;
+	int2 gid = consts.gid;
+	unsigned gw = consts.gw - 2; 
 	unsigned gid_1d = consts.gid_1d;
-	unsigned lid_1d_nb = consts.lid_1d_nb;
 	
-	unsigned i;
+	unsigned i, idx;
 	for (i = 0; i < consts.n_loop; ++i) {
-		T[gid_1d + i] = local_result[lid_1d_nb + i];
-	}*/
+		idx = gid.y * gw + gid.x + i;
+		tex[idx].x = T[gid_1d + i];
+		tex[idx].y = T[gid_1d + i];
+		tex[idx].z = T[gid_1d + i];
+		tex[idx].w = 255;
+	}
 }
 
-/*
-	T -> Initial array with temperature at each point, including borders (= boundary conditions);
-	K -> Array specifying the thermal conductivity at each point. Without borders;
-	dT -> Array specifying the increase in temperature at each step for each point, without borders;
-	n_loop -> How many pixels in a row should each thread compute. Must be exact fraction of blockDim.x;
-	tex -> Handle to texture shared with OpenGl to display the result;
- */
 
-// blockDim.x * blockDim.y * gridDim.x * gridDim.y * n_loop should be exacly the length of
-// T - 2 * (gridDim.x * blockDim.x + gridDim.y * blockDim.y) - 4 (subtraction of something for the boundaries)
-__global__ void stepSimulation2D(float *T, float *K, float *dT, unsigned n_loop, float *tex) {
+/*******************************************************************************
+ * STEP SIMULATION 2D
+ *******************************************************************************
+ * T:	    Initial array with temperature at each point, including borders 
+ * 	    (= boundary conditions);
+ * K:	    Array specifying the thermal conductivity at each point. 
+ * 	    Without borders;
+ * dT:	    Array specifying the increase in temperature at each step 
+ * 	    for each point, without borders;
+ * n_loop:  How many pixels in a row should each thread compute. 
+ * 	    must be exact fraction of blockDim.x;
+ * tex:	    Handle to texture shared with OpenGl to display the result;
+ *
+ * blockDim.x * blockDim.y * gridDim.x * gridDim.y * n_loop should be exacly the length of
+ * T - 2 * (gridDim.x * blockDim.x + gridDim.y * blockDim.y) - 4 (subtraction of something for the boundaries)
+ */
+__global__ void stepSimulation2D(float *T, float *K, float *dT, unsigned n_loop, 
+				 uchar4 *tex) 
+{
 	// Calculate some constants useful around
-	int2 gid;
+	int2 gid;	// saves for each thread gives the starting T[i,j] not considering borders
 	gid.x = (blockIdx.x * blockDim.x + threadIdx.x) * n_loop;
 	gid.y = blockIdx.y * blockDim.y + threadIdx.y;
-
-	unsigned gw = gridDim.x * blockDim.x * n_loop + 2; 
-	unsigned lw = blockDim.x * n_loop + 2; 
-
-	unsigned lid_1d = (threadIdx.y + 1) * lw + 1 + threadIdx.x;
-	unsigned gid_1d = (gid.y + 1) * gw + 1 + gid.x;
+	/*
+	gid.x = 1 + (blockIdx.x * blockDim.x + threadIdx.x) * n_loop;
+	gid.y = 1 + blockIdx.y * blockDim.y + threadIdx.y;
+	*/
+	
+	
+	unsigned gw = gridDim.x * blockDim.x * n_loop + 2; // global width for grid
+	unsigned lw = blockDim.x * n_loop + 2; // local width for block
+	
+	// local and global id in 1dim for T[i,j]
+	// [MODIFICA] aggiunto "* n_loop" in entrambe le righe
+	unsigned lid_1d = (threadIdx.y + 1) * lw + 1 + threadIdx.x * n_loop;
+	unsigned gid_1d = (gid.y + 1) * gw + 1 + gid.x * n_loop;
 	// local id without borders
 	unsigned lid_1d_nb = threadIdx.y * lw + threadIdx.x;
 
@@ -209,8 +237,7 @@ __global__ void stepSimulation2D(float *T, float *K, float *dT, unsigned n_loop,
 
 	// carry out the integration
 	integrate2D(consts, T, K, dT);
-
 	// copy data back to global memory and fill the texture for visualization with OpenGL
-	//copyBackData2D(consts, T);
+	drawToTexture(consts, T, tex);
 	__syncthreads();
 }

@@ -27,7 +27,7 @@ void register_texture(unsigned w, unsigned h);
 // Map and return array resource
 void * map_array();
 // Map and return texture resource
-void * map_texture();
+cudaArray * map_texture();
 // Draw resource
 void unmap_and_draw();
 

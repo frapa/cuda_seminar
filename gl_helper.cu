@@ -10,7 +10,9 @@ size_t vertex_num;
 
 // texture
 GLuint texture_gl;
-struct cudaGraphicsResource* texture_cuda;
+GLuint texture_pbo_gl;
+struct cudaGraphicsResource* texture_pbo_cuda;
+struct cudaGraphicsResource *texture_cuda;
 size_t texture_size;
 unsigned width, height;
 // array for texture
@@ -39,10 +41,12 @@ char * readIntoArray(const char *filename)
 	printf("'%s' size: %li bytes\n", filename, st.st_size);
 
 	// allocate memory
-  	char *buffer = (char *)malloc(st.st_size * sizeof(char));	
+  	char *buffer = (char *)malloc((st.st_size + 1) * sizeof(char));	
 
 	// read whole file inside memory
 	fread(buffer, 1, st.st_size, f);
+	// terminate with null
+	buffer[st.st_size] = '\0';
 
 	fclose(f);
 
@@ -66,7 +70,6 @@ void initShaders()
 	}
 
 	char *fragment_shader = readIntoArray("shaders/fragment.frag");
-	printf("%s\n%u\n", fragment_shader, strlen(fragment_shader));
 	fragmentShaderId = glCreateShader(GL_FRAGMENT_SHADER);
 	glShaderSource(fragmentShaderId, 1, (const char **)&fragment_shader, NULL);
 	glCompileShader(fragmentShaderId);
@@ -160,6 +163,10 @@ void register_texture(unsigned w, unsigned h)
 	width = w;
 	height = h;
 
+	/*glGenBuffers(1, &texture_pbo_gl);
+	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, texture_pbo_gl);
+	glBufferData(GL_PIXEL_UNPACK_BUFFER, width*height*4, NULL, GL_DYNAMIC_COPY);*/
+
 	// Tell OpenGl we want to allocate a texture
 	glGenTextures(1, &texture_gl);
 	// Tell OpenGl we are going to modify the state of the following texture
@@ -170,13 +177,33 @@ void register_texture(unsigned w, unsigned h)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	
 	// Actually allocate memory
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_RGBA, GL_FLOAT, NULL);	
+	/*unsigned char *img = (unsigned char *) malloc(w*h*4);
+	unsigned i = 0;
+	for (i = 0; i < w*h; ++i)
+	{
+			img[4*i] = 0;
+			img[4*i + 1] = 0;
+			img[4*i + 2] = 255;
+			img[4*i + 3] = 255;
+	}*/
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);	
 
 	// Tell OpenGl we finished modifying this etxture
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	// Register texture for use with cuda
-	cudaError_t error = cudaGraphicsGLRegisterImage(&texture_cuda, texture_gl, GL_TEXTURE_2D, cudaGraphicsMapFlagsWriteDiscard);
+	//cudaError_t error = cudaGLRegisterBufferObject(texture_pbo_gl);
+	//cudaError_t error = cudaGraphicsGLRegisterBuffer(&texture_pbo_cuda, texture_pbo_gl, cudaGraphicsMapFlagsWriteDiscard);
+	cudaGraphicsGLRegisterImage(&texture_cuda, texture_gl, GL_TEXTURE_2D, cudaGraphicsMapFlagsWriteDiscard);
+		
+
+#ifdef DEBUG	
+	cudaError_t error = cudaDeviceSynchronize();
+
+	if (error != cudaSuccess) {
+		printf("Error while registering OpenGl texture with Cuda: %s\n", cudaGetErrorString(error));
+	}
+#endif
 	
 	// This is needed because we need geometry on which to show the texture
 	// Tell OpenGL we want to allocate array
@@ -204,14 +231,35 @@ void * map_array()
 	return array_ptr;
 }
 
-void * map_texture()
+cudaArray * map_texture()
 {
-	void *texture_ptr;
+	cudaArray *texture_ptr;
+	//size_t array_size;
 
 	// Enables access from CUDA
+	//cudaGLMapBufferObject(&texture_ptr, texture_pbo_gl);
+	//cudaGraphicsMapResources(1, &texture_pbo_cuda, 0);
 	cudaGraphicsMapResources(1, &texture_cuda, 0);
+
+#ifdef DEBUG	
+	cudaError_t error = cudaDeviceSynchronize();
+
+	if (error != cudaSuccess) {
+		printf("Error while Mapping texture: %s\n", cudaGetErrorString(error));
+	}
+#endif
+	
 	// Get pointer of the texture
-	cudaGraphicsResourceGetMappedPointer(&texture_ptr, &texture_size, texture_cuda);
+	cudaGraphicsSubResourceGetMappedArray(&texture_ptr, texture_cuda, 0, 0);
+	//cudaError_t error = cudaGraphicsResourceGetMappedPointer(&texture_ptr, &array_size, texture_pbo_cuda);
+
+#ifdef DEBUG	
+	error = cudaDeviceSynchronize();
+
+	if (error != cudaSuccess) {
+		printf("Error while getting mapped pointer: %s\n", cudaGetErrorString(error));
+	}
+#endif	
 	
 	enabled_mask |= 0x02;
 
@@ -238,12 +286,14 @@ void draw_array(int type)
 void draw_texture()
 {
     // Select texture unit
-    glActiveTexture(GL_TEXTURE0);
-    // Tell OpenGL which texture to use
-	glBindTexture(GL_TEXTURE_2D, texture_gl);
+   	glActiveTexture(GL_TEXTURE0);
+	//glBindBuffer(GL_PIXEL_UNPACK_BUFFER, texture_pbo_gl);  
+	glBindTexture(GL_TEXTURE_2D, texture_gl); 
+	//glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	
 	// Assign texture unit index to the fragment shader
 	glUniform1i(1, 0); // location = 1, texture unit = 0
-		
+	
 	// Tell OpenGL which array contains the data
 	glBindBuffer(GL_ARRAY_BUFFER, vbo_tex);
  	// Specify how the data for position can be accessed
@@ -268,12 +318,19 @@ void unmap_and_draw()
 	    }
 
 	    draw_array(GL_LINE_STRIP);
-    } else if (enabled_mask & 0x02) {
-	    cudaError_t error = cudaGraphicsUnmapResources(1, &texture_cuda, 0);
+    }
+	
+	if (enabled_mask & 0x02) {
+	    cudaGraphicsUnmapResources(1, &texture_cuda, 0);
+	    //cudaError_t error = cudaGLUnmapBufferObject(texture_pbo_gl);
+		
+#ifdef DEBUG	
+		cudaError_t error = cudaDeviceSynchronize();
 
 	    if (error != cudaSuccess) {
-		    printf("GPU error: %s\n", cudaGetErrorString(error));
+		    printf("Error while unmapping resource: %s\n", cudaGetErrorString(error));
 	    }
+#endif
 
 	    draw_texture();
     }
