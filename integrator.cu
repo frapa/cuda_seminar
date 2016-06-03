@@ -108,8 +108,10 @@ __device__ void loadSharedMemory2D(const UsefulConstants consts, float *T)
 
 	// We have lots of pixels to be copied at the border...
 	// We assume here that the block is a square
+	// # border pixels = blockDim.y * 2 + blockDim.x * n_loop * 2
+	// # border pixels = blockDim.y * 4
 	// Number of border pixels copied by each thread:
-	unsigned c = 4 * n_loop / blockDim.y;
+	unsigned c = 4 * n_loop / blockDim.y;  // < 1??? = 0.5!!!
 	// scalar index of the thread inside a block, starting from 0
 	unsigned k = threadIdx.x + blockDim.x * threadIdx.y;
 	// Number of thread needed to copy each of the four borders
@@ -127,6 +129,7 @@ __device__ void loadSharedMemory2D(const UsefulConstants consts, float *T)
 	unsigned offset, mul, goffset, gmul;
 	// This fills the previous variables according to bnum
 	// used to move along border afterwards
+	//
 	if (bnum == 0) {
 		offset = goffset = 1;
 		mul = gmul = 1;
@@ -149,7 +152,9 @@ __device__ void loadSharedMemory2D(const UsefulConstants consts, float *T)
 	// fill borders
 	unsigned j, pos_along_border;
 	// global index of the first pixel in block, border included
-	unsigned gid_1d_start = blockIdx.y * blockDim.y * gw + blockIdx.x + blockDim.x * n_loop;
+	unsigned gid_1d_start = blockIdx.y * blockDim.y * gw 
+				+ blockIdx.x * n_loop 
+				+ blockIdx.x * blockDim.x * n_loop;
 	for (j = 0; j < c; ++j) {
 		pos_along_border = j + boffset;
 
