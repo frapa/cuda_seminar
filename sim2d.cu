@@ -24,7 +24,8 @@ uchar4 *image;
 double cpu_time, cpu_step;
 size_t temp_size;
 
-void readTiff(char *filename, float **raster, unsigned *w, unsigned *h, float scale)
+void readTiff(char *filename, float **raster, unsigned *w, unsigned *h, 
+	      float scale)
 {
 	// Open file
 	TIFF* img = TIFFOpen(filename, "r");

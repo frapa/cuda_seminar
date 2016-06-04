@@ -75,6 +75,7 @@ __device__ void integrate2D(const UsefulConstants consts, float *T, float *K, fl
 	//     0  1  0
 	//
 	// and save the result in local_result
+	// come mai non usiamo local_T e poi salviamo tutto indietro? 
 	unsigned i;
 	for (i = 0; i < consts.n_loop; ++i) {
 		T[gid_1d+i] += K[gid_1d+i] *
@@ -105,7 +106,8 @@ __device__ void loadSharedMemory2D(const UsefulConstants consts, float *T)
 	for (i = 0; i < n_loop; ++i) {
 		local_T[lid_1d + i] = T[gid_1d + i];
 	}
-
+	
+	/* OLD VERSION
 	// We have lots of pixels to be copied at the border...
 	// We assume here that the block is a square
 	// # border pixels = blockDim.y * 2 + blockDim.x * n_loop * 2
@@ -160,6 +162,64 @@ __device__ void loadSharedMemory2D(const UsefulConstants consts, float *T)
 
 		local_T[offset + pos_along_border*mul] =
 			T[gid_1d_start + goffset + pos_along_border*gmul];
+	}*/
+	
+	/* assume the block is a square:
+	 * # border pixels = blockDim.y * 2 + blockDim.x * n_loop * 2
+	 * # border pixels = blockDim.y * 4
+	 * 
+	 * k:		scalar index of the thread inside a block
+	 * bnum:	side number associated with the core, 
+	 * 		from 0 to 3 in the following order: top, left, right, 
+	 *		bottom. if>4 thread is ignored
+	 * c:		number of core to be copied by each thread
+	 * 		= 4 * blockDim.x * n_loop / (blockDim.y * blockDim.x)
+	 * 		remember blockDim.x*n_loop = blockDim.y
+	 * 		usually < 1 -> c = 0, must add 1.
+	 * offset, mul, goffset, gmul:
+	 * 		g stands for global. offset = starting point,
+	 * 		mul = step of iteration (allow you to go down a column)
+	 * gid_1d_start:
+	 * 		global index of the first pixel in block, 
+	 * 		border included
+	 */
+	unsigned k = threadIdx.x + blockDim.x * threadIdx.y;
+	unsigned c = 4 * n_loop / blockDim.y + 1;
+	unsigned bnum = k*c / blockDim.y;
+	
+	// g stands for global
+	unsigned offset, mul, goffset, gmul;
+	// This fills the previous variables according to bnum
+	// used to move along border afterwards
+	if (bnum == 0) {
+		offset = goffset = 1;
+		mul = gmul = 1;
+	} else if (bnum == 1) {
+		offset = lw;
+		goffset = gw;
+		mul = lw;
+		gmul = gw;
+	} else if (bnum == 2) {
+		offset = 2*lw - 1;
+		goffset = 2*gw - 1;
+		mul = lw;
+		gmul = gw;
+	} else if (bnum == 3) {
+		offset = lw * (blockDim.y + 1) + 1;
+		goffset = gw * (blockDim.y + 1) + 1;
+		mul = gmul = 1;
+	}
+
+	// fill borders
+	unsigned j;
+	
+	/* ho tolto il + 1 perchè la numerazione dovrebbe andare da 0 a
+	 * blockDim.x*n_loop, non da 0 a (blockDim.x + 1) * n_loop 
+	 */
+	unsigned gid_1d_start = blockIdx.y * blockDim.y * gw
+				+ blockIdx.x * blockDim.x * n_loop;
+	for (j = 0; j < c; ++j) {
+		local_T[offset + j*mul] = T[gid_1d_start + goffset + j*gmul];
 	}
 }
 
