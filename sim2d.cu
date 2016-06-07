@@ -121,6 +121,7 @@ void step()
 	if (loop_done == watch){
 	  cudaMemcpy(T_check, T_device, temp_size, cudaMemcpyDeviceToHost);	
 	  
+
 	  FILE *ftemp ;
 	  ftemp = fopen("check/temperature.txt", "w");
 	  if (ftemp == NULL){
@@ -137,23 +138,24 @@ void step()
 	  for (i=0; i<514; i++){
 	      fprintf(ftemp, "%f\n", T_check[257+i*514]);
 	  }
+	  fclose(ftemp);
 
 	  int j;
 	  FILE *fgrid;
 	  fgrid = fopen("check/T_step.txt", "w");
-	  if (ftemp == NULL){
+	  if (fgrid == NULL){
 	    printf("\nError while opening file T_step.txt\n");
 	    perror("Error while opnening file T_step.txt");
 	    exit(1);
 	  }
-	  for (i=0; i<h; i++){
-	    for (j=0; j<w; j++){
-	      fprintf(fgrid, "%f ", T_check[i*w + j]);
+	  for (i=0; i<514; i++){
+	    for (j=0; j<514; j++){
+	      fprintf(fgrid, "%f ", T_check[i*514 + j]);
 	    }
-	      fprintf(fgrid, "\n ");
+		if (i != 513)
+	      	fprintf(fgrid, "\n ");
 	  }
 	  fclose(fgrid);
-	  fclose(ftemp);
 	}
 
 	
@@ -233,10 +235,11 @@ int main(int argc, char **argv)
 	  perror("Error while opnening file T_initial.txt");
 	  exit(1);
 	}
-	for (i=0; i<h; i++){
-	  for (j=0; j<w; j++){
-	    fprintf(fgrid, "%f ", T[i*w + j]);
+	for (i=0; i<514; i++){
+	  for (j=0; j<514; j++){
+	    fprintf(fgrid, "%f ", T[i*514 + j]);
 	  }
+		if (i!=513)
  	  fprintf(fgrid, "\n");
 	}
 	fclose(fgrid);

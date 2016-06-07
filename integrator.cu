@@ -78,12 +78,12 @@ __device__ void integrate2D(const UsefulConstants consts, float *T, float *K, fl
 	// come mai non usiamo local_T e poi salviamo tutto indietro? 
 	unsigned i;
 	for (i = 0; i < consts.n_loop; ++i) {
-		/*T[gid_1d+i] += K[gid_1d+i] *
-			(local_T[lid_1d+1+i] + local_T[lid_1d-1+i] + local_T[lid_1d+lw+i] 
-				+ local_T[lid_1d-lw+i] - 4*local_T[lid_1d+i])
-			+ dT[gid_1d+i]; // + dT used to increment the temperature at the heater, for example
-		*/
-		T[gid_1d+i] = local_T[lid_1d+i]; // To test loadSharedMemory2D
+		T[gid_1d+i] += K[gid_1d+i-1-consts.gw] *
+			  (local_T[lid_1d+1+i] + local_T[lid_1d-1+i] + local_T[lid_1d+lw+i] 
+			   + local_T[lid_1d-lw+i] - 4*local_T[lid_1d+i])
+			+ dT[gid_1d+i-1-consts.gw]; // + dT used to increment the temperature at the heater, for example
+		
+		//T[gid_1d+i] = local_T[lid_1d+i]; // To test loadSharedMemory2D
 	}
 }
 
