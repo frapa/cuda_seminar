@@ -1,6 +1,6 @@
 NVCC = nvcc
 CFLAGS = -I. -g
-LIBS = -lGL -lGLU -lglut -lGLEW -ltiff -lcuda -lcudart -L./libmvec.so.1
+LIBS = -lGL -lGLU -lglut -lGLEW -ltiff -lcuda -lcudart 
 
 DEPS = gl_helper.h integrator.h 
 OBJ_wall = wall.o integrator.o gl_helper.o

@@ -12,8 +12,6 @@
 #define DEBUG
 
 // global constants
-/* watch saves the step number to be controlled 
- */
 unsigned w, h, n_loop, loop_done, watch;
 float heating_level = 0;
 dim3 block_num, thread_num;
@@ -65,27 +63,6 @@ void interpolate_array(float *in, float *out, unsigned size, float opacity)
 
 void on_key_pressed(unsigned char key, int x, int y)
 {
-  /* a cosa servono x e y? 
-   * gli if sono giusti? nel secondo if cambio heating_level>0 in >1 
-   * detto ciö credo sia meglio impostare l´heating_level a 1.1 se ´+´, 0.9 se ´-´
-   * inoltre credo che occorre passare tmp al posto di dT, perché tmp é passato come out
-   * dT come in alla funyione interpolate_array
-   * di sotto un esempio:
-     switch(key) {
-        case '+':
-            heating_level = 1.1
-            unsigned size = w * h;
-            interpolate_array(dT, tmp, size, heating_level);
-            cudaMemcpy(dT_device, tmp, size * sizeof(float), cudaMemcpyHostToDevice);
-            break;
-        case '-':
-            unsigned size = w * h;
-            heating_level 0.9;
-            interpolate_array(dT, tmp, size, heating_level);
-            cudaMemcpy(dT_device, tmp, size * sizeof(float), cudaMemcpyHostToDevice);
-            break;
-    }*/
-  
     switch(key) {
         case '+':
             if (heating_level < 1) {
@@ -96,7 +73,7 @@ void on_key_pressed(unsigned char key, int x, int y)
             }
             break;
         case '-':
-            if (heating_level > 1) {
+            if (heating_level > 0) {
                 unsigned size = w * h;
                 heating_level -= 0.1;
                 interpolate_array(dT, tmp, size, heating_level);
@@ -111,53 +88,10 @@ void step()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	cudaArray *tex = map_texture();
-	clock_t start_host, end_host; // Used to check time of execution
-	
-	// Copy data for controlling the correct execution of the simulation
-	float *T_check;
+    clock_t start_host, end_host; // Used to check time of execution
 	int i;
-	T_check = (float*)malloc(temp_size);
-	
-	if (loop_done == watch){
-	  cudaMemcpy(T_check, T_device, temp_size, cudaMemcpyDeviceToHost);	
-	  
-	  FILE *ftemp ;
-	  ftemp = fopen("check/temperature.txt", "w");
-	  if (ftemp == NULL){
-	    printf("\nError while opening file temperature.txt\n");
-	    perror("Error while opnening file temperature.txt");
-	    exit(1);
-	  }
-	  
-	  fprintf(ftemp, "row\n");
-	  for (i=514*257; i<514*257+514; i++){
-	      fprintf(ftemp, "%f\n", T_check[i]);
-	  }
-	  fprintf(ftemp, "\n\n\ncolumn:\n");
-	  for (i=0; i<514; i++){
-	      fprintf(ftemp, "%f\n", T_check[257+i*514]);
-	  }
 
-	  int j;
-	  FILE *fgrid;
-	  fgrid = fopen("check/T_step.txt", "w");
-	  if (ftemp == NULL){
-	    printf("\nError while opening file T_step.txt\n");
-	    perror("Error while opnening file T_step.txt");
-	    exit(1);
-	  }
-	  for (i=0; i<h; i++){
-	    for (j=0; j<w; j++){
-	      fprintf(fgrid, "%f ", T_check[i*w + j]);
-	    }
-	      fprintf(fgrid, "\n ");
-	  }
-	  fclose(fgrid);
-	  fclose(ftemp);
-	}
-
-	
-	start_host = clock();
+    start_host = clock();
 	stepSimulation2D<<<block_num, thread_num, size_shared>>>
 	    (T_device, K_device, dT_device, n_loop, image);
 	cudaError_t error = cudaDeviceSynchronize();
@@ -165,6 +99,25 @@ void step()
 
 	if (error != cudaSuccess) {
 		printf("Error while running kernel: %s\n", cudaGetErrorString(error));
+	}
+	
+	// Copy data for controlling the correct execution of the simulation
+	float *T_check;
+	T_check = (float*)malloc(temp_size);
+	
+	if (loop_done == watch){
+	  cudaMemcpy(T_check, T_device, temp_size, cudaMemcpyDeviceToHost);	
+	  
+	  FILE *ftemp ;
+	  ftemp = fopen("check/temperature.txt", "w");
+	  
+	  for (i=512*256; i<512*256+512; i++){
+	      fprintf(ftemp, "%f ", T_check[i]);
+	      fprintf(ftemp, "\n\n\n");
+	  }
+	  for (i=0; i<512; i++){
+	      fprintf(ftemp, "%f ", T_check[256+i*512]);
+	  }
 	}
 	
 	cpu_step = ((double)  (end_host - start_host));
@@ -204,44 +157,9 @@ int main(int argc, char **argv)
 	// read files
 	float *T, *K, *dT;
 	readTiff(temperature, &T, &w, &h, 1);
-	readTiff(conductivity, &K, &w, &h, 0.0001);	// Previous: 0.0001
+	readTiff(conductivity, &K, &w, &h, 0.0001);
 	readTiff(heating, &dT, &w, &h, 1);
 	printf("Simulation size: %ux%u\n", w, h);
-	
-	// check input
-	int i;
-	FILE *ftemp ;
-	ftemp = fopen("check/initial.txt", "w");
-	if (ftemp == NULL){
-	  printf("\nError while opening file initial.txt\n");
-	  perror("Error while opnening file initial.txt");
-	  exit(1);
-	}
-	for (i=514*257; i<514*257+514; i++){
-	    fprintf(ftemp, "%f\n", T[i]);
-	}
-	fprintf(ftemp, "\n\n\n");
-	for (i=0; i<514; i++){
-	    fprintf(ftemp, "%f\n", T[257+i*514]);
-	}
-	
-	int j;
-	FILE *fgrid;
-	fgrid = fopen("check/T_initial.txt", "w");
-	if (ftemp == NULL){
-	  printf("\nError while opening file T_initial.txt\n");
-	  perror("Error while opnening file T_initial.txt");
-	  exit(1);
-	}
-	for (i=0; i<h; i++){
-	  for (j=0; j<w; j++){
-	    fprintf(fgrid, "%f ", T[i*w + j]);
-	  }
- 	  fprintf(fgrid, "\n");
-	}
-	fclose(fgrid);
-	fclose(ftemp);
-	
 	
 	// Setup other interesting stuff
 	// Parse other command line arguments
@@ -272,15 +190,14 @@ int main(int argc, char **argv)
 	// dimensions of grid, blocks and shared memory
 	thread_num.x = square_side / n_loop;
 	thread_num.y = square_side;
-	block_num.x = w / square_side;	// non sarebbe piú semplice impostarlo ad n_loop?
+	block_num.x = w / square_side;
 	block_num.y = h / square_side;
 	size_shared = sizeof(float) * (square_side + 2) * (square_side + 2);
 	
 	printf("Grid size: %ux%u\n", block_num.x, block_num.y);
-	// Kilobit (Kb)? non Kilobyte (KB)? 
 	printf("Shared memory: %.2f Kb\n", size_shared / 1024.f);
 	
-	// Copy input to device 
+	// Copy input to device
 	cudaMalloc(&T_device, temp_size);
 	cudaMemcpy(T_device, T, temp_size, cudaMemcpyHostToDevice);
 	
@@ -308,10 +225,9 @@ int main(int argc, char **argv)
 	cpu_time = 0;
 	glutMainLoop();
 	
-	// Print time statistics DOES´N WORK! FIGURE OUT WHY
+	// Print time statistics
 	printf("Total Time: %f\n", cpu_time);
 	printf("Mean Time per Step: %f\n", cpu_time/(double)loop_done);
-	fflush(stdout);
 	
 	// cleanup
 	free(T);
