@@ -51,7 +51,7 @@ __global__ void stepSimulation(float *T, float K, float2 *vertices) {
 typedef struct {
 	int2 gid;
 	unsigned lid_1d, gid_1d;
-	unsigned lid_1d_nb;
+	unsigned lid_1d_nb, gid_1d_nb;
 	unsigned lw, gw, n_loop;
 	float *local_T;
 } UsefulConstants;
@@ -60,7 +60,7 @@ typedef struct {
 /*******************************************************************************
  * INTEGRATE 2D
  *******************************************************************************/
-__device__ void integrate2D(const UsefulConstants consts, float *T, float *K, float *dT)
+__device__ void integrate2D(const UsefulConstants consts, float *T, float *K, float *dT, int *d_operation)
 {
 	// Same boring thing to save typing
 	unsigned lw = consts.lw; 
@@ -82,6 +82,7 @@ __device__ void integrate2D(const UsefulConstants consts, float *T, float *K, fl
 			  (local_T[lid_1d+1+i] + local_T[lid_1d-1+i] + local_T[lid_1d+lw+i] 
 			   + local_T[lid_1d-lw+i] - 4*local_T[lid_1d+i])
 			+ dT[gid_1d+i-1-consts.gw]; // + dT used to increment the temperature at the heater, for example
+		//d_operation[gid_1d+i] = 255;
 		
 		//T[gid_1d+i] = local_T[lid_1d+i]; // To test loadSharedMemory2D
 	}
@@ -94,7 +95,7 @@ __device__ void integrate2D(const UsefulConstants consts, float *T, float *K, fl
  * Copies to shared memory the temperature in each point for faster access.
  * Does some fancy stuff to fill the boundaries.
  */
-__device__ void loadSharedMemory2D(const UsefulConstants consts, float *T)
+__device__ void loadSharedMemory2D(const UsefulConstants consts, float *T, int *d_operation)
 {
 	// for economy of chars
 	unsigned gw = consts.gw; 
@@ -108,66 +109,9 @@ __device__ void loadSharedMemory2D(const UsefulConstants consts, float *T)
 	unsigned i;
 	for (i = 0; i < n_loop; ++i) {
 		local_T[lid_1d + i] = T[gid_1d + i];
+		d_operation[gid_1d+i] = 255;
 	}
 	
-	/* OLD VERSION
-	// We have lots of pixels to be copied at the border...
-	// We assume here that the block is a square
-	// # border pixels = blockDim.y * 2 + blockDim.x * n_loop * 2
-	// # border pixels = blockDim.y * 4
-	// Number of border pixels copied by each thread:
-	unsigned c = 4 * n_loop / blockDim.y;  // < 1??? = 0.5!!!
-	// scalar index of the thread inside a block, starting from 0
-	unsigned k = threadIdx.x + blockDim.x * threadIdx.y;
-	// Number of thread needed to copy each of the four borders
-	// (should be 1/4 of the total number of threads)
-	unsigned thread_per_border = blockDim.y / c;
-	// Thread number along border, starting with 0
-	unsigned k_along_border = k % thread_per_border;
-	// Starting offset along border
-	unsigned boffset = c * k_along_border;
-	// Number of the border for current thread,
-	// from 0 to 3 in the following order: top, left, right, bottom
-	unsigned bnum = k / (thread_per_border);
-
-	// g stands for global
-	unsigned offset, mul, goffset, gmul;
-	// This fills the previous variables according to bnum
-	// used to move along border afterwards
-	//
-	if (bnum == 0) {
-		offset = goffset = 1;
-		mul = gmul = 1;
-	} else if (bnum == 1) {
-		offset = lw;
-		goffset = gw;
-		mul = lw;
-		gmul = gw;
-	} else if (bnum == 2) {
-		offset = 2*lw - 1;
-		goffset = 2*gw - 1;
-		mul = lw;
-		gmul = gw;
-	} else if (bnum == 3) {
-		offset = lw * (blockDim.y + 1) + 1;
-		goffset = gw * (blockDim.y + 1) + 1;
-		mul = gmul = 1;
-	}
-
-	// fill borders
-	unsigned j, pos_along_border;
-	// global index of the first pixel in block, border included
-	unsigned gid_1d_start = blockIdx.y * blockDim.y * gw 
-				+ blockIdx.x * n_loop 
-				+ blockIdx.x * blockDim.x * n_loop;
-	for (j = 0; j < c; ++j) {
-		pos_along_border = j + boffset;
-
-		local_T[offset + pos_along_border*mul] =
-			T[gid_1d_start + goffset + pos_along_border*gmul];
-	}*/
-	
-	// NEW VERSION
 	/* assume the block is a square:
 	 * # border pixels = blockDim.y * 2 + blockDim.x * n_loop * 2
 	 * # border pixels = blockDim.y * 4
@@ -188,7 +132,7 @@ __device__ void loadSharedMemory2D(const UsefulConstants consts, float *T)
 	 * 		border included
 	 */
 	unsigned k = threadIdx.x + blockDim.x * threadIdx.y;
-	unsigned c = 4 * n_loop / blockDim.y + 1;
+	unsigned c = 4 / blockDim.x + 1;
 	unsigned bnum = k*c / blockDim.y;
 	
 	// g stands for global
@@ -209,21 +153,21 @@ __device__ void loadSharedMemory2D(const UsefulConstants consts, float *T)
 		mul = lw;
 		gmul = gw;
 	} else if (bnum == 3) {
-		offset = lw * (blockDim.y + 1) + 1;
-		goffset = gw * (blockDim.y + 1) + 1;
+		offset = lw * (blockDim.y + 1) + 2;
+		goffset = gw * (blockDim.y + 1) + 2;
 		mul = gmul = 1;
 	}
 
 	// fill borders
 	unsigned j;
-	
 	/* ho tolto il + 1 perchè la numerazione dovrebbe andare da 0 a
 	 * blockDim.x*n_loop, non da 0 a (blockDim.x + 1) * n_loop 
 	 */
 	unsigned gid_1d_start = blockIdx.y * blockDim.y * gw
-				+ blockIdx.x * blockDim.x * n_loop;
+				+ blockIdx.x * blockDim.x * n_loop - 1;
 	for (j = 0; j < c; ++j) {
 		local_T[offset + j*mul] = T[gid_1d_start + goffset + j*gmul];
+		d_operation[gid_1d_start + goffset + j*gmul] = 100;
 	}
 }
 
@@ -263,27 +207,27 @@ __device__ void drawToTexture(const UsefulConstants consts, float * T, uchar4 *t
  * T - 2 * (gridDim.x * blockDim.x + gridDim.y * blockDim.y) - 4 (subtraction of something for the boundaries)
  */
 __global__ void stepSimulation2D(float *T, float *K, float *dT, unsigned n_loop, 
-				 uchar4 *tex) 
+				 uchar4 *tex, int *d_operation) 
 {
 	// Calculate some constants useful around
 	int2 gid;	// saves for each thread gives the starting T[i,j] not considering borders
-	gid.x = (blockIdx.x * blockDim.x + threadIdx.x) * n_loop;
+	gid.x = (blockIdx.x * blockDim.x + threadIdx.x)*n_loop;
 	gid.y = blockIdx.y * blockDim.y + threadIdx.y;
 	/*
 	gid.x = 1 + (blockIdx.x * blockDim.x + threadIdx.x) * n_loop;
 	gid.y = 1 + blockIdx.y * blockDim.y + threadIdx.y;
 	*/
-	
-	
+		
 	unsigned gw = gridDim.x * blockDim.x * n_loop + 2; // global width for grid
 	unsigned lw = blockDim.x * n_loop + 2; // local width for block
 	
 	// local and global id in 1dim for T[i,j]
 	// [MODIFICA] aggiunto "* n_loop" in entrambe le righe
 	unsigned lid_1d = (threadIdx.y + 1) * lw + 1 + threadIdx.x * n_loop;
-	unsigned gid_1d = (gid.y + 1) * gw + 1 + gid.x * n_loop;
+	unsigned gid_1d = (gid.y + 1) * gw + 1 + gid.x;
 	// local id without borders
-	unsigned lid_1d_nb = threadIdx.y * lw + threadIdx.x;
+	unsigned lid_1d_nb = threadIdx.y * lw + threadIdx.x * n_loop;
+	unsigned gid_1d_nb = gid.y * gw + gid.x;
 
     	// declare dynamically allocated shared memory
 	extern __shared__ float local_T[];
@@ -294,6 +238,7 @@ __global__ void stepSimulation2D(float *T, float *K, float *dT, unsigned n_loop,
 		.lid_1d = lid_1d,
 		.gid_1d = gid_1d,
 		.lid_1d_nb = lid_1d_nb,
+		.gid_1d_nb = gid_1d_nb,
 		.gw = gw,
 		.lw = lw,
 		.n_loop = n_loop,
@@ -301,11 +246,11 @@ __global__ void stepSimulation2D(float *T, float *K, float *dT, unsigned n_loop,
 	};
 
 	// load data to shared memory
-	loadSharedMemory2D(consts, T);
+	loadSharedMemory2D(consts, T, d_operation);
 	__syncthreads();
 
 	// carry out the integration
-	integrate2D(consts, T, K, dT);
+	integrate2D(consts, T, K, dT, d_operation);
 	// copy data back to global memory and fill the texture for visualization with OpenGL
 	drawToTexture(consts, T, tex);
 	__syncthreads();
