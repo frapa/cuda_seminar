@@ -225,6 +225,7 @@ int main(int argc, char **argv)
 	float *T, *K, *dT;
 	readTiff(temperature, &T, &w, &h, 1);
 	readTiff(conductivity, &K, &w, &h, 0.0001);	// Previous: 0.0001
+	/* 0.001 is unstable, 0.001 is quite stable */
 	readTiff(heating, &dT, &w, &h, 1);
 	printf("Simulation size: %ux%u\n", w, h);
 	
@@ -291,7 +292,7 @@ int main(int argc, char **argv)
 	tmp = (float *) malloc(param_size);
 	operation = (int*)malloc(op_size);
 	for (i=0; i<(w + 2) * (h + 2); i++){
-		operation[i]=0;
+		operation[i]=255;
 	}
 	
 	// dimensions of grid, blocks and shared memory

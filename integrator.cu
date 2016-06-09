@@ -112,7 +112,8 @@ __device__ void loadSharedMemory2D(const UsefulConstants consts, float *T, int *
 		d_operation[gid_1d+i] = 255;
 	}
 	
-	/* assume the block is a square:
+	/* Fill the borders with more threads:
+	 * assume the block is a square:
 	 * # border pixels = blockDim.y * 2 + blockDim.x * n_loop * 2
 	 * # border pixels = blockDim.y * 4
 	 * 
@@ -130,44 +131,105 @@ __device__ void loadSharedMemory2D(const UsefulConstants consts, float *T, int *
 	 * gid_1d_start:
 	 * 		global index of the first pixel in block, 
 	 * 		border included
+	 * side_id:	thread id on the side, considering 0 the first element of the
+	 *			side
 	 */
-	unsigned k = threadIdx.x + blockDim.x * threadIdx.y;
+	/*unsigned k = threadIdx.x + blockDim.x * threadIdx.y;
 	unsigned c = 4 / blockDim.x + 1;
 	unsigned bnum = k*c / blockDim.y;
-	
-	// g stands for global
+	unsigned gid_1d_start = blockIdx.y * blockDim.y * gw
+				+ blockIdx.x * blockDim.x * n_loop;
+	unsigned side_id = c*k - bnum * blockDim.y;
 	unsigned offset, mul, goffset, gmul;
-	// This fills the previous variables according to bnum
-	// used to move along border afterwards
+
 	if (bnum == 0) {
 		offset = goffset = 1;
 		mul = gmul = 1;
+		// fill borders
+		unsigned j;
+		for (j = 0; j < c; ++j) {
+			local_T[offset + (j+side_id)*mul] = T[gid_1d_start + goffset + (j+side_id)*gmul];
+			d_operation[gid_1d_start + goffset + j*gmul + side_id*gmul] = 100;
+		}
 	} else if (bnum == 1) {
 		offset = lw;
 		goffset = gw;
 		mul = lw;
 		gmul = gw;
+		// fill borders
+		unsigned j;
+		for (j = 0; j < c; ++j) {
+			local_T[offset + (j+side_id)*mul] = T[gid_1d_start + goffset + (j+side_id)*gmul];
+			d_operation[gid_1d_start + goffset + j*gmul + side_id*gmul] = 100;
+		}
 	} else if (bnum == 2) {
 		offset = 2*lw - 1;
 		goffset = 2*gw - 1;
 		mul = lw;
 		gmul = gw;
+		// fill borders
+		unsigned j;
+		for (j = 0; j < c; ++j) {
+			local_T[offset + (j+side_id)*mul] = T[gid_1d_start + goffset + (j+side_id)*gmul];
+			d_operation[gid_1d_start + goffset + j*gmul + side_id*gmul] = 100;
+		}
 	} else if (bnum == 3) {
 		offset = lw * (blockDim.y + 1) + 2;
 		goffset = gw * (blockDim.y + 1) + 2;
 		mul = gmul = 1;
-	}
+		// fill borders
+		unsigned j;
+		for (j = 0; j < c; ++j) {
+			local_T[offset + (j+side_id)*mul] = T[gid_1d_start + goffset + (j+side_id)*gmul];
+			d_operation[gid_1d_start + goffset + j*gmul + side_id*gmul] = 100;
+		}
+	}*/
 
-	// fill borders
-	unsigned j;
-	/* ho tolto il + 1 perchè la numerazione dovrebbe andare da 0 a
-	 * blockDim.x*n_loop, non da 0 a (blockDim.x + 1) * n_loop 
+	/* Fill the borders with just one thread
 	 */
+	unsigned k = threadIdx.x + blockDim.x * threadIdx.y;
 	unsigned gid_1d_start = blockIdx.y * blockDim.y * gw
-				+ blockIdx.x * blockDim.x * n_loop - 1;
-	for (j = 0; j < c; ++j) {
-		local_T[offset + j*mul] = T[gid_1d_start + goffset + j*gmul];
-		d_operation[gid_1d_start + goffset + j*gmul] = 100;
+				+ blockIdx.x * blockDim.x * n_loop;
+	unsigned offset, mul, goffset, gmul;
+	if (k == 0){
+		unsigned j;
+
+		// fill border 0, works fine
+		offset = goffset = 1;
+		mul = gmul = 1;
+		for (j = 0; j < blockDim.y; ++j) {
+			local_T[offset + j*mul] = T[gid_1d_start + goffset + j*gmul];
+			d_operation[gid_1d_start + goffset + j*gmul] = 100;
+		}
+		
+		// fill border 1, works fine
+		offset = lw;
+		goffset = gw;
+		mul = lw;
+		gmul = gw;
+		for (j = 0; j < blockDim.y; ++j) {
+			local_T[offset + j*mul] = T[gid_1d_start + goffset + j*gmul];
+			d_operation[gid_1d_start + goffset + j*gmul] = 100;
+		}
+	
+		// fill border 2
+		offset = 2*lw - 1;
+		goffset = gw + lw -1;
+		mul = lw;
+		gmul = gw;
+		for (j = 0; j < blockDim.y; ++j) {
+			local_T[offset + j*mul] = T[gid_1d_start + goffset + j*gmul];
+			d_operation[gid_1d_start + goffset + j*gmul] = 100;
+		}
+	
+		// fill border 3
+		offset = lw * (blockDim.y + 1) + 1;
+		goffset = gw * (blockDim.y + 1) + 1;
+		mul = gmul = 1;
+		for (j = 0; j < blockDim.y; ++j) {
+			local_T[offset + j*mul] = T[gid_1d_start + goffset + j*gmul];
+			d_operation[gid_1d_start + goffset + j*gmul] = 100;
+		}	
 	}
 }
 
