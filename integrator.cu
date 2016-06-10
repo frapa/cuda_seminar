@@ -66,7 +66,9 @@ __device__ void integrate2D(const UsefulConstants consts, float *T, float *K, fl
 	unsigned lw = consts.lw; 
 	float *local_T = consts.local_T;
 	unsigned lid_1d = consts.lid_1d;
-	unsigned gid_1d = consts.gid_1d;
+	unsigned gid_1d = consts.gid_1d;	
+	unsigned gid_1d_nb = consts.gid_1d_nb;
+	//unsigned gid_1d_nb = consts.gid_1d_nb;
 
 	// convolve local_T with the laplacian operator:
 	//
@@ -78,10 +80,10 @@ __device__ void integrate2D(const UsefulConstants consts, float *T, float *K, fl
 	// come mai non usiamo local_T e poi salviamo tutto indietro? 
 	unsigned i;
 	for (i = 0; i < consts.n_loop; ++i) {
-		T[gid_1d+i] += K[gid_1d+i-1-consts.gw] *
+		T[gid_1d+i] += K[gid_1d_nb+i] *
 			  (local_T[lid_1d+1+i] + local_T[lid_1d-1+i] + local_T[lid_1d+lw+i] 
 			   + local_T[lid_1d-lw+i] - 4*local_T[lid_1d+i])
-			+ dT[gid_1d+i-1-consts.gw]; // + dT used to increment the temperature at the heater, for example
+			+ dT[gid_1d_nb+i]; // + dT used to increment the temperature at the heater, for example
 		//d_operation[gid_1d+i] = 255;
 		
 		//T[gid_1d+i] = local_T[lid_1d+i]; // To test loadSharedMemory2D
@@ -109,8 +111,9 @@ __device__ void loadSharedMemory2D(const UsefulConstants consts, float *T, int *
 	unsigned i;
 	for (i = 0; i < n_loop; ++i) {
 		local_T[lid_1d + i] = T[gid_1d + i];
-		d_operation[gid_1d+i] = 255;
+		//d_operation[gid_1d+i] = 255;
 	}
+	__syncthreads();
 	
 	/* Fill the borders with more threads:
 	 * assume the block is a square:
@@ -164,7 +167,7 @@ __device__ void loadSharedMemory2D(const UsefulConstants consts, float *T, int *
 		}
 	} else if (bnum == 2) {
 		offset = 2*lw - 1;
-		goffset = 2*gw - 1;
+		goffset = gw + lw -1;
 		mul = lw;
 		gmul = gw;
 		// fill borders
@@ -185,8 +188,7 @@ __device__ void loadSharedMemory2D(const UsefulConstants consts, float *T, int *
 		}
 	}*/
 
-	/* Fill the borders with just one thread
-	 */
+	// Fill the borders with just one thread, variables as before
 	unsigned k = threadIdx.x + blockDim.x * threadIdx.y;
 	unsigned gid_1d_start = blockIdx.y * blockDim.y * gw
 				+ blockIdx.x * blockDim.x * n_loop;
@@ -199,7 +201,7 @@ __device__ void loadSharedMemory2D(const UsefulConstants consts, float *T, int *
 		mul = gmul = 1;
 		for (j = 0; j < blockDim.y; ++j) {
 			local_T[offset + j*mul] = T[gid_1d_start + goffset + j*gmul];
-			d_operation[gid_1d_start + goffset + j*gmul] = 100;
+			//d_operation[gid_1d_start + goffset + j*gmul] = 100;
 		}
 		
 		// fill border 1, works fine
@@ -209,7 +211,7 @@ __device__ void loadSharedMemory2D(const UsefulConstants consts, float *T, int *
 		gmul = gw;
 		for (j = 0; j < blockDim.y; ++j) {
 			local_T[offset + j*mul] = T[gid_1d_start + goffset + j*gmul];
-			d_operation[gid_1d_start + goffset + j*gmul] = 100;
+			//d_operation[gid_1d_start + goffset + j*gmul] = 100;
 		}
 	
 		// fill border 2
@@ -219,7 +221,7 @@ __device__ void loadSharedMemory2D(const UsefulConstants consts, float *T, int *
 		gmul = gw;
 		for (j = 0; j < blockDim.y; ++j) {
 			local_T[offset + j*mul] = T[gid_1d_start + goffset + j*gmul];
-			d_operation[gid_1d_start + goffset + j*gmul] = 100;
+			//d_operation[gid_1d_start + goffset + j*gmul] = 100;
 		}
 	
 		// fill border 3
@@ -228,7 +230,7 @@ __device__ void loadSharedMemory2D(const UsefulConstants consts, float *T, int *
 		mul = gmul = 1;
 		for (j = 0; j < blockDim.y; ++j) {
 			local_T[offset + j*mul] = T[gid_1d_start + goffset + j*gmul];
-			d_operation[gid_1d_start + goffset + j*gmul] = 100;
+			//d_operation[gid_1d_start + goffset + j*gmul] = 100;
 		}	
 	}
 }
@@ -264,34 +266,26 @@ __device__ void drawToTexture(const UsefulConstants consts, float * T, uchar4 *t
  * n_loop:  How many pixels in a row should each thread compute. 
  * 	    must be exact fraction of blockDim.x;
  * tex:	    Handle to texture shared with OpenGl to display the result;
- *
- * blockDim.x * blockDim.y * gridDim.x * gridDim.y * n_loop should be exacly the length of
- * T - 2 * (gridDim.x * blockDim.x + gridDim.y * blockDim.y) - 4 (subtraction of something for the boundaries)
  */
 __global__ void stepSimulation2D(float *T, float *K, float *dT, unsigned n_loop, 
 				 uchar4 *tex, int *d_operation) 
 {
 	// Calculate some constants useful around
-	int2 gid;	// saves for each thread gives the starting T[i,j] not considering borders
+	int2 gid;	// for each thread, starting T[i,j] not considering borders
 	gid.x = (blockIdx.x * blockDim.x + threadIdx.x)*n_loop;
 	gid.y = blockIdx.y * blockDim.y + threadIdx.y;
-	/*
-	gid.x = 1 + (blockIdx.x * blockDim.x + threadIdx.x) * n_loop;
-	gid.y = 1 + blockIdx.y * blockDim.y + threadIdx.y;
-	*/
 		
 	unsigned gw = gridDim.x * blockDim.x * n_loop + 2; // global width for grid
 	unsigned lw = blockDim.x * n_loop + 2; // local width for block
 	
 	// local and global id in 1dim for T[i,j]
-	// [MODIFICA] aggiunto "* n_loop" in entrambe le righe
 	unsigned lid_1d = (threadIdx.y + 1) * lw + 1 + threadIdx.x * n_loop;
 	unsigned gid_1d = (gid.y + 1) * gw + 1 + gid.x;
 	// local id without borders
-	unsigned lid_1d_nb = threadIdx.y * lw + threadIdx.x * n_loop;
-	unsigned gid_1d_nb = gid.y * gw + gid.x;
+	unsigned lid_1d_nb = threadIdx.y * (lw-2) + threadIdx.x * n_loop;
+	unsigned gid_1d_nb = gid.y * (gw-2) + gid.x;
 
-    	// declare dynamically allocated shared memory
+    // declare dynamically allocated shared memory
 	extern __shared__ float local_T[];
 	
 	// create a struct to pass around all our nice constants

@@ -115,7 +115,7 @@ void step()
 	clock_t start_host, end_host; // Used to check time of execution
 	
 	// Copy data for controlling the correct execution of the simulation
-	float *T_check;
+	/*float *T_check;
 	int i;
 	T_check = (float*)malloc(temp_size);
 	
@@ -174,7 +174,7 @@ void step()
 	      		fprintf(fgrid, "\n ");
 	  	}
 	  	fclose(fop);
-	}
+	}*/
 
 	// START SIMULATION
 	start_host = clock();
@@ -190,6 +190,21 @@ void step()
 	cpu_step = ((double)  (end_host - start_host));
 	cpu_time += cpu_step / CLOCKS_PER_SEC;
 	loop_done += 1;
+
+	// Print time statistics
+	/* To be done: delete total time and mean time from previous step
+	   and print time step + total time + mean time of the current step.
+	printf("Total Time: %f\n", cpu_time);
+	printf("Mean Time per Step: %f\n", cpu_time/(double)loop_done);
+	fflush(stdout);
+	FILE *ftime;
+	ftime = fopen("check/exe_time.txt", "w");
+	if (ftime == NULL){
+	  	printf("\nError while opening file exe_time.txt\n");
+	  	perror("Error while opnening file exe_time.txt");
+	  	exit(1);
+	}
+	fprintf(ftime, "Total Time: %f\nMean Time per Step: %f", cpu_time, cpu_time/(double)loop_done);*/
 
 	cudaMemcpyToArray(tex, 0, 0, image, w*h*4, cudaMemcpyDeviceToDevice);
 
@@ -224,26 +239,27 @@ int main(int argc, char **argv)
 	// read files
 	float *T, *K, *dT;
 	readTiff(temperature, &T, &w, &h, 1);
-	readTiff(conductivity, &K, &w, &h, 0.0001);	// Previous: 0.0001
-	/* 0.001 is unstable, 0.001 is quite stable */
-	readTiff(heating, &dT, &w, &h, 1);
+	readTiff(conductivity, &K, &w, &h, 0.001);	
+	// 0.01 is unstable, 0.001 is quite stable 
+	readTiff(heating, &dT, &w, &h, 0.0001);
+	// if scale factor too high temperature overflow
 	printf("Simulation size: %ux%u\n", w, h);
 	
 	// check input
-	int i;
-	/*FILE *ftemp ;
+	/*int i;
+	FILE *ftemp ;
 	ftemp = fopen("check/initial.txt", "w");
 	if (ftemp == NULL){
 	  	printf("\nError while opening file initial.txt\n");
 	  	perror("Error while opnening file initial.txt");
 	  	exit(1);
 	}
-	for (i=514*257; i<514*257+514; i++){
-	    fprintf(ftemp, "%f\n", T[i]);
+	for (i=w*w/2; i<w*w/2+w; i++){
+	    fprintf(ftemp, "%f\n", dT[i]);
 	}
 	fprintf(ftemp, "\n\n\n");
-	for (i=0; i<514; i++){
-	    fprintf(ftemp, "%f\n", T[257+i*514]);
+	for (i=0; i<w; i++){
+	    fprintf(ftemp, "%f\n", dT[w/2 + i*w]);
 	}
 	
 	int j;
@@ -254,11 +270,11 @@ int main(int argc, char **argv)
 	  	perror("Error while opnening file T_initial.txt");
 	  	exit(1);
 	}
-	for (i=0; i<514; i++){
-	  	for (j=0; j<514; j++){
-	    	fprintf(fgrid, "%f ", T[i*514 + j]);
+	for (i=0; i<w; i++){
+	  	for (j=0; j<w; j++){
+	    	fprintf(fgrid, "%f ", dT[i*w + j]);
 	  	}
-		if (i!=513)
+		if (i!=w-1)
  	  	fprintf(fgrid, "\n");
 	}
 	fclose(fgrid);
@@ -290,10 +306,11 @@ int main(int argc, char **argv)
 	temp_size = (w + 2) * (h + 2) * sizeof(float);
 	op_size = (w + 2) * (h + 2) * sizeof(int);
 	tmp = (float *) malloc(param_size);
-	operation = (int*)malloc(op_size);
+	
+	/*operation = (int*)malloc(op_size);
 	for (i=0; i<(w + 2) * (h + 2); i++){
 		operation[i]=255;
-	}
+	}*/
 	
 	// dimensions of grid, blocks and shared memory
 	thread_num.x = w/(block_side*n_loop);
@@ -337,11 +354,8 @@ int main(int argc, char **argv)
 	cpu_time = 0;
 	glutMainLoop();
 	
-	// Print time statistics DOES´N WORK! FIGURE OUT WHY
-	printf("Total Time: %f\n", cpu_time);
-	printf("Mean Time per Step: %f\n", cpu_time/(double)loop_done);
-	fflush(stdout);
-	
+	// Looks like code after glutMainLoop(); doesn´t work... 	
+
 	// cleanup
 	free(T);
 	free(K);
