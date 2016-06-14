@@ -1,53 +1,3 @@
-#include "integrator.h"
-
-__device__ void integrate(unsigned lid, float K)
-{
-	extern __shared__ float local_T[];
-
-	local_T[lid+1] += K * (local_T[lid+2] + local_T[lid] - 2*local_T[lid+1]);
-}
-
-__device__ void loadSharedMemory(unsigned gid, unsigned lid, float *T)
-{
-	extern __shared__ float local_T[];
-
-	local_T[lid+1] = T[gid+1];
-
-	if (lid == 0) {
-		local_T[0] = T[gid];
-		local_T[blockDim.x + 1] = T[gid + blockDim.x + 1];
-	}
-}
-
-__device__ void copyData(unsigned gid, unsigned lid, float *T, float2 *vertices)
-{
-	extern __shared__ float local_T[];
-	float len = gridDim.x * blockDim.x / 2;
-
-	T[gid+1] = local_T[lid+1];
-
-	vertices[gid].x = (gid - len) / len;
-	vertices[gid].y = local_T[lid+1] - 1.0f;
-}
-
-// blockDim.x * gridDim.x should be exacly the length of T - 2 (2 for the boundaries)
-__global__ void stepSimulation(float *T, float K, float2 *vertices) {
-	unsigned lid = threadIdx.x;
-	unsigned gid = blockIdx.x * blockDim.x + threadIdx.x;
-
-	extern __shared__ float local_T[];
-
-	loadSharedMemory(gid, lid, T);
-	__syncthreads();
-
-	integrate(lid, K);
-
-	copyData(gid, lid, T, vertices);
-	__syncthreads();
-}
-
-// ---- 2D ----------------------------------------------------------------------------
-
 typedef struct {
 	int2 gid;
 	unsigned lid_1d, gid_1d;
@@ -137,13 +87,8 @@ __device__ void loadSharedMemory2D(const UsefulConstants consts, float *T, int *
 	 * side_id:	thread id on the side, considering 0 the first element of the
 	 *			side
 	 */
-<<<<<<< HEAD
-	unsigned c = 4 * n_loop / blockDim.y + 1;
-	unsigned k = threadIdx.x + blockDim.x * threadIdx.y;
-=======
 	/*unsigned k = threadIdx.x + blockDim.x * threadIdx.y;
 	unsigned c = 4 / blockDim.x + 1;
->>>>>>> 99dad9ea69fcef1bdf213a5d7b00ab2a6bc2443b
 	unsigned bnum = k*c / blockDim.y;
 	unsigned gid_1d_start = blockIdx.y * blockDim.y * gw
 				+ blockIdx.x * blockDim.x * n_loop;
@@ -312,7 +257,4 @@ __global__ void stepSimulation2D(float *T, float *K, float *dT, unsigned n_loop,
 
 	// carry out the integration
 	integrate2D(consts, T, K, dT, d_operation);
-	// copy data back to global memory and fill the texture for visualization with OpenGL
-	drawToTexture(consts, T, tex);
-	__syncthreads();
 }

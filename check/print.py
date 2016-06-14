@@ -19,7 +19,7 @@ for i in range(len(all_file)):
 	elements = string.split(all_file[i])
 	for j in range(len(elements)):
 		temp = float(elements[j])
-		data[j][i] = int(temp)
+		data[i][j] = int(temp)
 
 
 

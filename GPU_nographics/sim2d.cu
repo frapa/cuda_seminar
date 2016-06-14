@@ -7,7 +7,6 @@
 #include "tiffio.h"
 
 #include "integrator.h"
-#include "gl_helper.h"
 
 #define DEBUG
 
@@ -58,167 +57,47 @@ void readTiff(char *filename, float **raster, unsigned *w, unsigned *h,
 	TIFFClose(img);
 }
 
-void interpolate_array(float *in, float *out, unsigned size, float opacity)
-{
-    unsigned i;
-    for (i = 0; i < size; ++i)
-        out[i] = in[i] * opacity;
-}
-
-void on_key_pressed(unsigned char key, int x, int y)
-{
-  /* a cosa servono x e y? 
-   * gli if sono giusti? nel secondo if cambio heating_level>0 in >1 
-   * detto ciö credo sia meglio impostare l´heating_level a 1.1 se ´+´, 0.9 se ´-´
-   * inoltre credo che occorre passare tmp al posto di dT, perché tmp é passato come out
-   * dT come in alla funyione interpolate_array
-   * di sotto un esempio:
-     switch(key) {
-        case '+':
-            heating_level = 1.1
-            unsigned size = w * h;
-            interpolate_array(dT, tmp, size, heating_level);
-            cudaMemcpy(dT_device, tmp, size * sizeof(float), cudaMemcpyHostToDevice);
-            break;
-        case '-':
-            unsigned size = w * h;
-            heating_level 0.9;
-            interpolate_array(dT, tmp, size, heating_level);
-            cudaMemcpy(dT_device, tmp, size * sizeof(float), cudaMemcpyHostToDevice);
-            break;
-    }*/
-  
-    switch(key) {
-        case '+':
-            if (heating_level < 1) {
-                unsigned size = w * h;
-                heating_level += 0.1;
-                interpolate_array(dT, tmp, size, heating_level);
-                cudaMemcpy(dT_device, dT, size * sizeof(float), cudaMemcpyHostToDevice);
-            }
-            break;
-        case '-':
-            if (heating_level > 1) {
-                unsigned size = w * h;
-                heating_level -= 0.1;
-                interpolate_array(dT, tmp, size, heating_level);
-                cudaMemcpy(dT_device, dT, size * sizeof(float), cudaMemcpyHostToDevice);
-            }
-            break;
-    }
-}
-
 void step()
 {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	cudaArray *tex = map_texture();
 	clock_t start_host, end_host; // Used to check time of execution
 	
-	// Copy data for controlling the correct execution of the simulation
-	/*float *T_check;
-	int i;
-	T_check = (float*)malloc(temp_size);
+	while(1){
+		// START SIMULATION
+		start_host = clock();
+		stepSimulation2D<<<block_num, thread_num, size_shared>>>
+		    (T_device, K_device, dT_device, n_loop, image, d_operation);
+		cudaError_t error = cudaDeviceSynchronize();
+		end_host=clock();
+
+		if (error != cudaSuccess) {
+			printf("Error while running kernel: %s\n", cudaGetErrorString(error));
+		}
 	
-	if (loop_done == watch){
-	  	cudaMemcpy(T_check, T_device, temp_size, cudaMemcpyDeviceToHost);	
-	  
+		cpu_step = ((double)  (end_host - start_host));
+		cpu_time += cpu_step / CLOCKS_PER_SEC;
+		loop_done += 1;
 
-	  	FILE *ftemp ;
-	  	ftemp = fopen("check/temperature.txt", "w");
-	  	if (ftemp == NULL){
-	    	printf("\nError while opening file temperature.txt\n");
-	    	perror("Error while opnening file temperature.txt");
-	    	exit(1);
-	  	}
-	  
-	  	fprintf(ftemp, "row\n");
-	  	for (i=514*257; i<514*257+514; i++){
-	      	fprintf(ftemp, "%f\n", T_check[i]);
-	  	}
-	  	fprintf(ftemp, "\n\n\ncolumn:\n");
-	  	for (i=0; i<514; i++){
-	    	  fprintf(ftemp, "%f\n", T_check[257+i*514]);
-	  	}
-	  	fclose(ftemp);
-
-	  	int j;
-	  	FILE *fgrid;
-	  	fgrid = fopen("check/T_step.txt", "w");
-	  	if (fgrid == NULL){
-	    	printf("\nError while opening file T_step.txt\n");
-	    	perror("Error while opnening file T_step.txt");
-	    	exit(1);
-	  	}
-	  	for (i=0; i<514; i++){
-	  		for (j=0; j<514; j++){
-	      		fprintf(fgrid, "%f ", T_check[i*514 + j]);
-	    	}
-			if (i != 513)
-	      		fprintf(fgrid, "\n ");
-	  	}
-	  	fclose(fgrid);
-
-	  	cudaMemcpy(operation, d_operation, temp_size, cudaMemcpyDeviceToHost);
-	  	FILE *fop;
-	  	fop = fopen("check/operation.txt", "w");
-	  	if (fop == NULL){
-	    	printf("\nError while opening file T_step.txt\n");
-	    	perror("Error while opnening file T_step.txt");
-	    	exit(1);
-	  	}
-	  	for (i=0; i<514; i++){
-	    	for (j=0; j<514; j++){
-	      		fprintf(fop, "%d ", operation[i*514 + j]);
-	    	}
-			if (i != 513)
-	      		fprintf(fgrid, "\n ");
-	  	}
-	  	fclose(fop);
-	}*/
-
-	// START SIMULATION
-	start_host = clock();
-	stepSimulation2D<<<block_num, thread_num, size_shared>>>
-	    (T_device, K_device, dT_device, n_loop, image, d_operation);
-	cudaError_t error = cudaDeviceSynchronize();
-	end_host=clock();
-
-	if (error != cudaSuccess) {
-		printf("Error while running kernel: %s\n", cudaGetErrorString(error));
-	}
+		// Print time statistics
+		FILE *ftime;
+		ftime = fopen("check/mean_time.txt", "w");
+		if (ftime == NULL){
+		  	printf("\nError while opening file mean_time.txt\n");
+		  	perror("Error while opnening file mean_time.txt");
+		  	exit(1);
+		}
+		fprintf(ftime, "Total Time: %f\nMean Time per Step: %f", cpu_time, 
+				cpu_time/(double)loop_done);
+		fclose(ftime);
 	
-	cpu_step = ((double)  (end_host - start_host));
-	cpu_time += cpu_step / CLOCKS_PER_SEC;
-	loop_done += 1;
-
-	// Print time statistics
-	FILE *ftime;
-	ftime = fopen("check/mean_time.txt", "w");
-	if (ftime == NULL){
-	  	printf("\nError while opening file mean_time.txt\n");
-	  	perror("Error while opnening file mean_time.txt");
-	  	exit(1);
+		ftime = fopen("check/exe_time.txt", "a");
+		if (ftime == NULL){
+		  	printf("\nError while opening file mean_time.txt\n");
+		  	perror("Error while opnening file mean_time.txt");
+		  	exit(1);
+		}
+		fprintf(ftime, "%f\n", cpu_step / CLOCKS_PER_SEC);
+		fclose(ftime);
 	}
-	fprintf(ftime, "Total Time: %f\nMean Time per Step: %f", cpu_time, 
-			cpu_time/(double)loop_done);
-	fclose(ftime);
-
-	ftime = fopen("check/exe_time.txt", "a");
-	if (ftime == NULL){
-	  	printf("\nError while opening file mean_time.txt\n");
-	  	perror("Error while opnening file mean_time.txt");
-	  	exit(1);
-	}
-	fprintf(ftime, "%f\n", cpu_step / CLOCKS_PER_SEC);
-	fclose(ftime);
-
-	cudaMemcpyToArray(tex, 0, 0, image, w*h*4, cudaMemcpyDeviceToDevice);
-
-	unmap_and_draw();
-	
-	glutSwapBuffers();
-	glutPostRedisplay();
 }
 
 int main(int argc, char **argv)
@@ -345,22 +224,12 @@ int main(int argc, char **argv)
 
 	cudaMalloc(&image, w*h*4);
 
-	// Now that we are done loading the simulation, we start OpenGL
-	initGL(&argc, argv, "Heat equation", step);
-
-	cudaSetDevice(0);
-	cudaGLSetGLDevice(0);
-
-	register_texture(w, h);
-	glutKeyboardFunc(on_key_pressed);
-	
-	//register_array(n * 2, sizeof(float), n);
-
 	// Start simulation
 	loop_done = 0;
 	cpu_time = 0;
-	glutMainLoop();
 	
+	
+
 	// Looks like code after glutMainLoop(); doesn´t work... 	
 
 	// cleanup
