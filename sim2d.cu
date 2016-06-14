@@ -9,7 +9,7 @@
 #include "integrator.h"
 #include "gl_helper.h"
 
-#define DEBUG
+//#define DEBUG
 
 // global constants
 /* watch saves the step number to be controlled 
@@ -61,8 +61,9 @@ void readTiff(char *filename, float **raster, unsigned *w, unsigned *h,
 void interpolate_array(float *in, float *out, unsigned size, float opacity)
 {
     unsigned i;
-    for (i = 0; i < size; ++i)
+    for (i = 0; i < size; ++i) {
         out[i] = in[i] * opacity;
+	}
 }
 
 void on_key_pressed(unsigned char key, int x, int y)
@@ -88,28 +89,34 @@ void on_key_pressed(unsigned char key, int x, int y)
             break;
     }*/
   
+  	unsigned size = w * h;
     switch(key) {
         case '+':
-            if (heating_level < 1) {
-                unsigned size = w * h;
+            if (heating_level < 0.95) {
                 heating_level += 0.1;
                 interpolate_array(dT, tmp, size, heating_level);
-                cudaMemcpy(dT_device, dT, size * sizeof(float), cudaMemcpyHostToDevice);
+                cudaMemcpy(dT_device, tmp, size * sizeof(float), cudaMemcpyHostToDevice);
             }
             break;
         case '-':
-            if (heating_level > 1) {
-                unsigned size = w * h;
+            if (heating_level > 0.05) {
                 heating_level -= 0.1;
                 interpolate_array(dT, tmp, size, heating_level);
-                cudaMemcpy(dT_device, dT, size * sizeof(float), cudaMemcpyHostToDevice);
+                cudaMemcpy(dT_device, tmp, size * sizeof(float), cudaMemcpyHostToDevice);
             }
             break;
     }
+
+	char title[257];
+	sprintf(title, "Heat equation (heating: %.0f %% - Avg (ms): %.1f)",
+		heating_level * 100, cpu_time / loop_done * 1000);
+
+	glutSetWindowTitle(title);
 }
 
 void step()
 {
+	//printf("dT: %p\n", dT);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	cudaArray *tex = map_texture();
@@ -179,8 +186,11 @@ void step()
 
 	// START SIMULATION
 	start_host = clock();
-	stepSimulation2D<<<block_num, thread_num, size_shared>>>
-	    (T_device, K_device, dT_device, n_loop, image, d_operation);
+	unsigned z;
+	for (z = 0; z < 24; ++z) {
+		stepSimulation2D<<<block_num, thread_num, size_shared>>>
+			(T_device, K_device, dT_device, n_loop, image, d_operation);
+	}
 	cudaError_t error = cudaDeviceSynchronize();
 	end_host=clock();
 
@@ -190,9 +200,10 @@ void step()
 	
 	cpu_step = ((double)  (end_host - start_host));
 	cpu_time += cpu_step / CLOCKS_PER_SEC;
-	loop_done += 1;
+	++loop_done;
 
 	// Print time statistics
+#ifdef DEBUG	
 	FILE *ftime;
 	ftime = fopen("check/mean_time.txt", "w");
 	if (ftime == NULL){
@@ -212,11 +223,13 @@ void step()
 	}
 	fprintf(ftime, "%f\n", cpu_step / CLOCKS_PER_SEC);
 	fclose(ftime);
+#endif
 
+	// This copies image to texture
 	cudaMemcpyToArray(tex, 0, 0, image, w*h*4, cudaMemcpyDeviceToDevice);
 
 	unmap_and_draw();
-	
+
 	glutSwapBuffers();
 	glutPostRedisplay();
 }
@@ -232,9 +245,9 @@ int main(int argc, char **argv)
 	// Build filenames
 	char *simulation_folder = argv[1];
 	unsigned len = strlen(simulation_folder);
-	char *temperature = (char *)malloc(len + 17);
-	char *conductivity = (char *)malloc(len + 18);
-	char *heating = (char *)malloc(len + 13);
+	char temperature[257];
+	char conductivity[257];
+	char heating[257];
 
 	strcpy(temperature, simulation_folder);
 	strcpy(temperature + len, "temperature.tiff");
@@ -244,9 +257,9 @@ int main(int argc, char **argv)
 	strcpy(heating + len, "heating.tiff");
 
 	// read files
-	float *T, *K, *dT;
+	float *T, *K;
 	readTiff(temperature, &T, &w, &h, 1);
-	readTiff(conductivity, &K, &w, &h, 0.001);	
+	readTiff(conductivity, &K, &w, &h, 0.0005);	
 	// 0.01 is unstable, 0.001 is quite stable 
 	readTiff(heating, &dT, &w, &h, 0.0001);
 	// if scale factor too high temperature overflow
@@ -313,6 +326,7 @@ int main(int argc, char **argv)
 	temp_size = (w + 2) * (h + 2) * sizeof(float);
 	op_size = (w + 2) * (h + 2) * sizeof(int);
 	tmp = (float *) malloc(param_size);
+	interpolate_array(dT, tmp, w*h, heating_level);
 	
 	/*operation = (int*)malloc(op_size);
 	for (i=0; i<(w + 2) * (h + 2); i++){
@@ -327,7 +341,7 @@ int main(int argc, char **argv)
 	size_shared = sizeof(float) * (w/(block_side) + 2) * (w/(block_side) + 2);
 	
 	printf("Grid size: %ux%u\n", block_num.x, block_num.y);
-	// Kilobit (Kb)? non Kilobyte (KB)? 
+	// Kilobyte (Kb). Kilobit e' kb o kbit? 
 	printf("Shared memory: %.2f Kb\n", size_shared / 1024.f);
 	
 	// Copy input to device 
@@ -338,7 +352,7 @@ int main(int argc, char **argv)
 	cudaMemcpy(K_device, K, param_size, cudaMemcpyHostToDevice);
 	
 	cudaMalloc(&dT_device, param_size);
-	cudaMemcpy(dT_device, dT, param_size, cudaMemcpyHostToDevice);
+	cudaMemcpy(dT_device, tmp, param_size, cudaMemcpyHostToDevice);
 
 	cudaMalloc(&d_operation, op_size);
 	cudaMemcpy(d_operation, operation, op_size, cudaMemcpyHostToDevice);
@@ -346,7 +360,7 @@ int main(int argc, char **argv)
 	cudaMalloc(&image, w*h*4);
 
 	// Now that we are done loading the simulation, we start OpenGL
-	initGL(&argc, argv, "Heat equation", step);
+	initGL(&argc, argv, "Heat equation", step, 512, 512);
 
 	cudaSetDevice(0);
 	cudaGLSetGLDevice(0);

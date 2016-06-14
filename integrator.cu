@@ -137,13 +137,11 @@ __device__ void loadSharedMemory2D(const UsefulConstants consts, float *T, int *
 	 * side_id:	thread id on the side, considering 0 the first element of the
 	 *			side
 	 */
-<<<<<<< HEAD
-	unsigned c = 4 * n_loop / blockDim.y + 1;
-	unsigned k = threadIdx.x + blockDim.x * threadIdx.y;
-=======
+	//unsigned c = 4 * n_loop / blockDim.y + 1;
+	//unsigned k = threadIdx.x + blockDim.x * threadIdx.y;
+
 	/*unsigned k = threadIdx.x + blockDim.x * threadIdx.y;
 	unsigned c = 4 / blockDim.x + 1;
->>>>>>> 99dad9ea69fcef1bdf213a5d7b00ab2a6bc2443b
 	unsigned bnum = k*c / blockDim.y;
 	unsigned gid_1d_start = blockIdx.y * blockDim.y * gw
 				+ blockIdx.x * blockDim.x * n_loop;

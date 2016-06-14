@@ -1,2 +1,2 @@
-Total Time: 5.571076
-Mean Time per Step: 0.015016
+Total Time: 1.065434
+Mean Time per Step: 0.014595
