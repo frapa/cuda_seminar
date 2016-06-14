@@ -1,0 +1,105 @@
+%Theoretical introduction
+\begin{frame}
+\frametitle{Demonstration}
+%\vspace{-20pt}
+We consider heat propagation in a medium (e.g. a solid) far away from any state transition and we define:
+\begin{description}
+	\item[$\epsilon$]: internal energy density
+	\item[$c$]: specific heat
+	\item[$\rho$]: mass density
+	\item[$T$]: temperature
+\end{description}
+By virtue of the first thermodinamic principle ($\Delta U = \Delta Q - L = \Delta Q$):
+\begin{equation}\label{eq:first}
+	d 
+	\left[ 
+		\int_\Omega 
+		\! c \rho T  
+		\, \mathrm{d}V
+	\right]
+	= 
+	\left[
+		- \int_{\partial \Omega} 
+		\! \vec{J} \cdot \vec{n}
+		\, \mathrm{d}S
+	\right]
+	\mathrm{d}t
+\end{equation}
+\end{frame}
+
+\begin{frame}
+\frametitle{Demonstration}
+%\vspace{-20pt}
+$$
+	d 
+	\left[ 
+		\int_\Omega 
+		\! c \rho T  
+		\, \mathrm{d}V
+	\right]
+	= 
+	\left[
+		- \int_{\partial \Omega} 
+		\! \vec{J} \cdot \vec{n}
+		\, \mathrm{d}S
+	\right]
+	\mathrm{d}t
+$$
+
+{\it Newton-Fourier Law}, heat spreads and temperature becomes uniform throughout the medium:
+\begin{equation}\label{eq:newton}
+	\vec{J} = - k \vec{\nabla} T
+\end{equation}
+
+By substituting equation (\ref{eq:newton}) in (\ref{eq:first}) and applying the {\it divergence theorem} one gets the {\bf heat equation}:
+\begin{equation}
+	\frac
+		{\partial T}
+		{\partial t}
+	- \frac{k}{c \rho}
+	  \Delta T
+	=0
+\end{equation}
+\end{frame}
+
+\begin{frame}
+\frametitle{Heat Equation}
+$$
+	\frac
+		{\partial T}
+		{\partial t}
+	- \frac{k}{c \rho}
+	  \Delta T
+	= f(\vec{x}, t)
+$$
+\begin{itemize}
+	\item First order in time
+	\item Second order in space
+	\item If we consider a heating system, we must add $f(\vec{x}, t)$
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Numerical Solution}
+$$
+	\frac
+		{\partial T}
+		{\partial t}
+	- \frac{k}{c \rho}
+	  \Delta T
+	= f(\vec{x}, t)
+$$
+
+Discretize space and time: foreward difference for time, central difference for space:
+
+\begin{equation}
+	T_{i,j}^{n+1} = 
+				T_{i,j}^n
+				+ \eta
+					\left[ T_{i+1,j}^n + T_{i-1,j}^n 
+						 + T_{i,j+1}^n + T_{i,j-1}^n
+						 - 4 T_{i,j}^n
+					\right]
+\end{equation}
+where $n$ is the time index, $i,j$ are x-index and y-index, $\eta = \frac{k \Delta t}{c \rho (\Delta x)^2}$.
+\end{frame}

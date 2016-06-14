@@ -1,0 +1,45 @@
+°INTRO
+°-pet
+°-mcp
+°-efficienze
+°-compton
+
+PET
+°-scopo
+°-principio fisico
+°	-non collinearità
+°-possibilità
+°	-rivelatori usati e necessità
+
+MCP
+-altà velocità
+-caratteristiche geometriche
+-tipi
+-risoluzione temporale
+-risoluzione spaziale
+	-percorso positroni
+	-percorso elettroni 	-> IMMAGINE
+	-parallasse 		-> IMMAGINE
+-efficienza elettrone-segnale
+
+GAMMA
+-descrizione configurazione
+-efficienza rivelazione vetro/vetro al piombo		-> IMMAGINE
+	-presenza assorbitore oro/vetro			-> IMMAGINE
+-eventi compton multipli
+	-sezioni d'urto
+	-frazioni
+	-efficienza signolo evento
+		-spessore ottimale			-> IMMAGINE
+	-metodo con risoluzione				-> IMMAGINE
+
+CONCLUSIONI
+-MCP per PET
+	-alta risoluzione temporale
+-efficienza singolo fotone
+	-50 layer (compton minimi)
+	-valori
+-efficienza elettroni
+	-deduzione da dati Frascati 
+-efficienza finale singolo elettrone
+

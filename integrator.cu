@@ -187,8 +187,8 @@ __device__ void loadSharedMemory2D(const UsefulConstants consts, float *T)
 	 * 		global index of the first pixel in block, 
 	 * 		border included
 	 */
-	unsigned k = threadIdx.x + blockDim.x * threadIdx.y;
 	unsigned c = 4 * n_loop / blockDim.y + 1;
+	unsigned k = threadIdx.x + blockDim.x * threadIdx.y;
 	unsigned bnum = k*c / blockDim.y;
 	
 	// g stands for global

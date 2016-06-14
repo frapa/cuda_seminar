@@ -1,0 +1,60 @@
+\documentclass{beamer}
+
+\usepackage{setspace}
+\usepackage{wrapfig}
+\usepackage[utf8]{inputenc}
+\usepackage[italian]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+
+%\usetheme{Berkeley}
+\usetheme{Goettingen}
+\setbeamercovered{transparent} 
+\setbeamertemplate{navigation symbols}{} 
+%\useoutertheme[left]{sidebar}
+%\usecolortheme{orchid}
+
+
+\setbeamertemplate{footline}{\leavevmode\hbox{%
+  \begin{beamercolorbox}%
+  [wd=0.99\paperwidth,ht=6.1ex,right]%
+  {author in head/foot}
+  \usebeamerfont{title in head/foot}
+    \vskip2pt\mbox{}
+      \footnotesize{\insertframenumber\,/\,\inserttotalframenumber}
+    \vskip3.5pt
+  \end{beamercolorbox}}%
+\vskip0pt}
+
+
+\title
+	{Heat Equation}
+\author
+	{Francesco Pasa\\
+	 Enrico Panontin}
+	
+\institute{
+	Technische Universität München\\ 
+	Physics Department\\
+	Parallelisation of Physics Calculations on GPUs with CUDA} 
+\date{16 Juni 2016} 
+\subject{}
+
+\begin{document}
+\include{Diapositive/Intro}
+
+\section{Heat Equation}
+\include{Diapositive/Equation}
+
+\section{Our Code}
+\include{Diapositive/Code}
+
+\section{Performances}
+%\include{}
+
+\section{Conclusions}
+%\include{}
+
+\end{document} 
