@@ -60,7 +60,7 @@ typedef struct {
 /*******************************************************************************
  * INTEGRATE 2D
  *******************************************************************************/
-__device__ void integrate2D(const UsefulConstants consts, float *T, float *K, float *dT, int *d_operation)
+__device__ void integrate2D(const UsefulConstants consts, float *T, float *K, float *dT)
 {
 	// Same boring thing to save typing
 	unsigned lw = consts.lw; 
@@ -97,7 +97,7 @@ __device__ void integrate2D(const UsefulConstants consts, float *T, float *K, fl
  * Copies to shared memory the temperature in each point for faster access.
  * Does some fancy stuff to fill the boundaries.
  */
-__device__ void loadSharedMemory2D(const UsefulConstants consts, float *T, int *d_operation)
+__device__ void loadSharedMemory2D(const UsefulConstants consts, float *T)
 {
 	// for economy of chars
 	unsigned gw = consts.gw; 
@@ -196,7 +196,7 @@ __device__ void loadSharedMemory2D(const UsefulConstants consts, float *T, int *
 	unsigned gid_1d_start = blockIdx.y * blockDim.y * gw
 				+ blockIdx.x * blockDim.x * n_loop;
 	unsigned offset, mul, goffset, gmul;
-	if (k == 0){
+	if (k == 0) {
 		unsigned j;
 
 		// fill border 0, works fine
@@ -269,9 +269,11 @@ __device__ void drawToTexture(const UsefulConstants consts, float * T, uchar4 *t
  * n_loop:  How many pixels in a row should each thread compute. 
  * 	    must be exact fraction of blockDim.x;
  * tex:	    Handle to texture shared with OpenGl to display the result;
+ *
+ * copy_tex: Copy texture?
  */
 __global__ void stepSimulation2D(float *T, float *K, float *dT, unsigned n_loop, 
-				 uchar4 *tex, int *d_operation) 
+				    uchar4 *tex, char copy_tex) 
 {
 	// Calculate some constants useful around
 	int2 gid;	// for each thread, starting T[i,j] not considering borders
@@ -305,12 +307,16 @@ __global__ void stepSimulation2D(float *T, float *K, float *dT, unsigned n_loop,
 	};
 
 	// load data to shared memory
-	loadSharedMemory2D(consts, T, d_operation);
+	loadSharedMemory2D(consts, T);
 	__syncthreads();
 
 	// carry out the integration
-	integrate2D(consts, T, K, dT, d_operation);
+	integrate2D(consts, T, K, dT);
+	
 	// copy data back to global memory and fill the texture for visualization with OpenGL
-	drawToTexture(consts, T, tex);
+	if (copy_tex) {
+	    drawToTexture(consts, T, tex);
+	}
+	
 	__syncthreads();
 }

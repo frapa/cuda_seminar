@@ -9,7 +9,7 @@ extern "C" {
 
 __global__ void stepSimulation(float *T, float K, float2 *vertices);
 __global__ void stepSimulation2D(float *T, float *K, float *dT, unsigned n_loop, 
-								 uchar4 *tex, int *d_operation);
+								 uchar4 *tex, char copy_tex);
 
 #ifdef __cplusplus
 }
