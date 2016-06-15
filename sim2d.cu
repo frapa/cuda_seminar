@@ -10,6 +10,7 @@
 #include "gl_helper.h"
 
 //#define DEBUG
+//#define TIME
 
 // global constants
 /* watch saves the step number to be controlled 
@@ -68,28 +69,7 @@ void interpolate_array(float *in, float *out, unsigned size, float opacity)
 
 void on_key_pressed(unsigned char key, int x, int y)
 {
-  /* a cosa servono x e y? 
-   * gli if sono giusti? nel secondo if cambio heating_level>0 in >1 
-   * detto ciö credo sia meglio impostare l´heating_level a 1.1 se ´+´, 0.9 se ´-´
-   * inoltre credo che occorre passare tmp al posto di dT, perché tmp é passato come out
-   * dT come in alla funyione interpolate_array
-   * di sotto un esempio:
-     switch(key) {
-        case '+':
-            heating_level = 1.1
-            unsigned size = w * h;
-            interpolate_array(dT, tmp, size, heating_level);
-            cudaMemcpy(dT_device, tmp, size * sizeof(float), cudaMemcpyHostToDevice);
-            break;
-        case '-':
-            unsigned size = w * h;
-            heating_level 0.9;
-            interpolate_array(dT, tmp, size, heating_level);
-            cudaMemcpy(dT_device, tmp, size * sizeof(float), cudaMemcpyHostToDevice);
-            break;
-    }*/
-  
-  	unsigned size = w * h;
+   unsigned size = w * h;
     switch(key) {
         case '+':
             if (heating_level < 0.95) {
@@ -123,7 +103,8 @@ void step()
 	clock_t start_host, end_host; // Used to check time of execution
 	
 	// Copy data for controlling the correct execution of the simulation
-	/*float *T_check;
+#ifdef DEBUG
+	float *T_check;
 	int i;
 	T_check = (float*)malloc(temp_size);
 	
@@ -181,7 +162,8 @@ void step()
 	      		fprintf(fgrid, "\n ");
 	  	}
 	  	fclose(fop);
-	}*/
+	}
+#endif
 
 	// START SIMULATION
 	start_host = clock();
@@ -202,7 +184,7 @@ void step()
 	++loop_done;
 
 	// Print time statistics
-//#ifdef DEBUG	
+#ifdef TIME	
 	FILE *ftime;
 	if (loop_done == watch){
 		ftime = fopen("check/mean_time.txt", "a");
@@ -226,7 +208,7 @@ void step()
 	}
 	fprintf(ftime, "%f\n", cpu_step / CLOCKS_PER_SEC);
 	fclose(ftime);
-//#endif
+#endif
 
 	// This copies image to texture
 	cudaMemcpyToArray(tex, 0, 0, image, w*h*4, cudaMemcpyDeviceToDevice);
