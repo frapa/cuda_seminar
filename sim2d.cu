@@ -251,42 +251,6 @@ int main(int argc, char **argv)
 	// if scale factor too high temperature overflow
 	printf("Simulation size: %ux%u\n", w, h);
 	
-	// check input
-	/*int i;
-	FILE *ftemp ;
-	ftemp = fopen("check/initial.txt", "w");
-	if (ftemp == NULL){
-	  	printf("\nError while opening file initial.txt\n");
-	  	perror("Error while opnening file initial.txt");
-	  	exit(1);
-	}
-	for (i=w*w/2; i<w*w/2+w; i++){
-	    fprintf(ftemp, "%f\n", dT[i]);
-	}
-	fprintf(ftemp, "\n\n\n");
-	for (i=0; i<w; i++){
-	    fprintf(ftemp, "%f\n", dT[w/2 + i*w]);
-	}
-	
-	int j;
-	FILE *fgrid;
-	fgrid = fopen("check/T_initial.txt", "w");
-	if (ftemp == NULL){
-	  	printf("\nError while opening file T_initial.txt\n");
-	  	perror("Error while opnening file T_initial.txt");
-	  	exit(1);
-	}
-	for (i=0; i<w; i++){
-	  	for (j=0; j<w; j++){
-	    	fprintf(fgrid, "%f ", dT[i*w + j]);
-	  	}
-		if (i!=w-1)
- 	  	fprintf(fgrid, "\n");
-	}
-	fclose(fgrid);
-	fclose(ftemp);*/
-	
-	
 	// Setup other interesting stuff and parse other command line arguments
 	unsigned block_side = 8;
 	n_loop = 8;
@@ -314,11 +278,6 @@ int main(int argc, char **argv)
 	tmp = (float *) malloc(param_size);
 	interpolate_array(dT, tmp, w*h, heating_level);
 	
-	/*operation = (int*)malloc(op_size);
-	for (i=0; i<(w + 2) * (h + 2); i++){
-		operation[i]=255;
-	}*/
-	
 	// dimensions of grid, blocks and shared memory
 	thread_num.x = w/(block_side*n_loop);
 	thread_num.y = w/(block_side);
@@ -327,7 +286,6 @@ int main(int argc, char **argv)
 	size_shared = sizeof(float) * (w/(block_side) + 2) * (w/(block_side) + 2);
 	
 	printf("Grid size: %ux%u\n", block_num.x, block_num.y);
-	// Kilobyte (Kb). Kilobit e' kb o kbit? 
 	printf("Shared memory: %.2f Kb\n", size_shared / 1024.f);
 	
 	// Copy input to device 
