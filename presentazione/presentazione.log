@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2016.6.7)  15 JUN 2016 17:42
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2016.6.7)  15 JUN 2016 18:30
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1059,7 +1059,12 @@ Package hyperref Warning: Token not allowed in a PDF string (PDFDocEncoding):
 (hyperref)                removing `\\' on input line 36.
 
 (./presentazione.aux (./Diapositive/Intro.aux) (./Diapositive/Equation.aux)
-(./Diapositive/Code.aux) (./Diapositive/Performance.aux))
+(./Diapositive/Code.aux) (./Diapositive/Performance.aux)
+(./Diapositive/opengl_integration.aux
+
+LaTeX Warning: Label `eq:first' multiply defined.
+
+))
 \openout1 = `presentazione.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 45.
@@ -1301,7 +1306,7 @@ thkerncmss.
 
 
 ]
-<../check/borders_1c_01.png, id=90, 515.9275pt x 515.9275pt>
+<../check/borders_1c_01.png, id=128, 515.9275pt x 515.9275pt>
 File: ../check/borders_1c_01.png Graphic file (type png)
 
 <use ../check/borders_1c_01.png>
@@ -1314,7 +1319,7 @@ Overfull \vbox (1.36084pt too high) detected at line 13
 [8
 
  <../check/borders_1c_01.png (PNG copy)>]
-<../check/borders_sync.png, id=97, 515.9275pt x 515.9275pt>
+<../check/borders_sync.png, id=139, 515.9275pt x 515.9275pt>
 File: ../check/borders_sync.png Graphic file (type png)
 
 <use ../check/borders_sync.png>
@@ -1330,17 +1335,46 @@ Overfull \vbox (1.36084pt too high) detected at line 22
 \openout2 = `Diapositive/Performance.aux'.
 
  (./Diapositive/Performance.tex
-[10
+<../check/stable_001.png, id=151, 515.9275pt x 515.9275pt>
+File: ../check/stable_001.png Graphic file (type png)
+
+<use ../check/stable_001.png>
+Package pdftex.def Info: ../check/stable_001.png used on input line 8.
+(pdftex.def)             Requested size: 139.30228pt x 139.30228pt.
+
+<../check/unstable_002.png, id=152, 515.9275pt x 515.9275pt>
+File: ../check/unstable_002.png Graphic file (type png)
+
+<use ../check/unstable_002.png>
+Package pdftex.def Info: ../check/unstable_002.png used on input line 8.
+(pdftex.def)             Requested size: 139.30228pt x 139.30228pt.
+ [10
 
 
 
-] [11
+ <../check/stable_001.png (PNG copy)> <../check/unstable_002.png (PNG copy)>] [
+11
 
 ] [12
 
 ] [13
 
 ] [14
+
+] [15
+
+])
+\openout2 = `Diapositive/opengl_integration.aux'.
+
+
+(./Diapositive/opengl_integration.texpdfTeX warning (ext4): destination with th
+e same identifier (name{eq:first}) has been already used, duplicate ignored
+<to be read again> 
+                   \relax 
+l.27 \end{frame}
+                 [16
+
+
 
 ])
 \tf@nav=\write6
@@ -1352,30 +1386,33 @@ Overfull \vbox (1.36084pt too high) detected at line 22
 \tf@snm=\write8
 \openout8 = `presentazione.snm'.
 
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 60.
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 60.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 63.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 63.
  (./presentazione.aux (./Diapositive/Intro.aux)
 (./Diapositive/Equation.aux) (./Diapositive/Code.aux)
-(./Diapositive/Performance.aux))
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 60.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 60.
+(./Diapositive/Performance.aux) (./Diapositive/opengl_integration.aux))
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 63.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 63.
 Package rerunfilecheck Info: File `presentazione.out' has not changed.
-(rerunfilecheck)             Checksum: E768A962A24776E4BD1BAE54891B7B06;138.
+(rerunfilecheck)             Checksum: 5595D7C318F338DF4349A25FC4E03662;196.
 
 
 LaTeX Font Warning: Size substitutions with differences
 (Font)              up to 1.0pt have occurred.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 60.
+
+LaTeX Warning: There were multiply-defined labels.
+
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 63.
  ) 
 Here is how much of TeX's memory you used:
- 17827 strings out of 493029
- 333979 string characters out of 6136235
- 418994 words of memory out of 5000000
- 20863 multiletter control sequences out of 15000+600000
+ 17921 strings out of 493029
+ 335722 string characters out of 6136235
+ 420398 words of memory out of 5000000
+ 20943 multiletter control sequences out of 15000+600000
  12986 words of font info for 47 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 56i,15n,61p,914b,440s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 56i,15n,64p,914b,534s stack positions out of 5000i,500n,10000p,200000b,80000s
 </usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></us
 r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/shar
 e/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/share/texli
@@ -1390,10 +1427,10 @@ cm/cmssi8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cms
 y10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb
 ></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/symbols/msam10.pfb>
 
-Output written on presentazione.pdf (14 pages, 145046 bytes).
+Output written on presentazione.pdf (16 pages, 192123 bytes).
 PDF statistics:
- 191 PDF objects out of 1000 (max. 8388607)
- 150 compressed objects within 2 object streams
- 34 named destinations out of 1000 (max. 500000)
- 83 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 281 PDF objects out of 1000 (max. 8388607)
+ 235 compressed objects within 3 object streams
+ 39 named destinations out of 1000 (max. 500000)
+ 101 words of extra memory for PDF output out of 10000 (max. 10000000)
 

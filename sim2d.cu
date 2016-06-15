@@ -10,7 +10,7 @@
 #include "gl_helper.h"
 
 //#define DEBUG
-//#define TIME
+#define TIME
 
 // global constants
 /* watch saves the step number to be controlled 
@@ -193,7 +193,7 @@ void step()
 		  	perror("Error while opnening file mean_time.txt");
 		  	exit(1);
 		}
-		fprintf(ftime, "\nNumber of blocks: %d\n", block_num.x);
+		fprintf(ftime, "\nNumber of loops: %d\n", n_loop);
 		fprintf(ftime, "Total Time: %f\nMean Time per Step: %f\n", cpu_time, 
 				cpu_time/(double)loop_done);
 		fclose(ftime);
