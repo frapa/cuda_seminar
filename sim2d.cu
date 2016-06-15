@@ -129,7 +129,6 @@ void step()
 	
 	if (loop_done == watch){
 	  	cudaMemcpy(T_check, T_device, temp_size, cudaMemcpyDeviceToHost);	
-	  
 
 	  	FILE *ftemp ;
 	  	ftemp = fopen("check/temperature.txt", "w");
@@ -203,18 +202,22 @@ void step()
 	++loop_done;
 
 	// Print time statistics
-#ifdef DEBUG	
+//#ifdef DEBUG	
 	FILE *ftime;
-	ftime = fopen("check/mean_time.txt", "w");
-	if (ftime == NULL){
-	  	printf("\nError while opening file mean_time.txt\n");
-	  	perror("Error while opnening file mean_time.txt");
-	  	exit(1);
+	if (loop_done == watch){
+		ftime = fopen("check/mean_time.txt", "a");
+		if (ftime == NULL){
+		  	printf("\nError while opening file mean_time.txt\n");
+		  	perror("Error while opnening file mean_time.txt");
+		  	exit(1);
+		}
+		fprintf(ftime, "\nNumber of blocks: %d\n", block_num.x);
+		fprintf(ftime, "Total Time: %f\nMean Time per Step: %f\n", cpu_time, 
+				cpu_time/(double)loop_done);
+		fclose(ftime);
+		
+		printf("Time saved\n");
 	}
-	fprintf(ftime, "Total Time: %f\nMean Time per Step: %f", cpu_time, 
-			cpu_time/(double)loop_done);
-	fclose(ftime);
-
 	ftime = fopen("check/exe_time.txt", "a");
 	if (ftime == NULL){
 	  	printf("\nError while opening file mean_time.txt\n");
@@ -223,7 +226,7 @@ void step()
 	}
 	fprintf(ftime, "%f\n", cpu_step / CLOCKS_PER_SEC);
 	fclose(ftime);
-#endif
+//#endif
 
 	// This copies image to texture
 	cudaMemcpyToArray(tex, 0, 0, image, w*h*4, cudaMemcpyDeviceToDevice);
@@ -257,11 +260,12 @@ int main(int argc, char **argv)
 	strcpy(heating + len, "heating.tiff");
 
 	// read files
-	float *T, *K;
+	float *T, *K, dt;
+	dt = 0.0001;
 	readTiff(temperature, &T, &w, &h, 1);
-	readTiff(conductivity, &K, &w, &h, 0.0005);	
-	// 0.01 is unstable, 0.001 is quite stable 
-	readTiff(heating, &dT, &w, &h, 0.0001);
+	readTiff(conductivity, &K, &w, &h, dt);	
+	// 0.01 is unstable, 0.001 is the first stable 
+	readTiff(heating, &dT, &w, &h, dt);
 	// if scale factor too high temperature overflow
 	printf("Simulation size: %ux%u\n", w, h);
 	
