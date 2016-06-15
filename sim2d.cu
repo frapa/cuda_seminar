@@ -281,6 +281,8 @@ int main(int argc, char **argv)
 		        sscanf(argv[j+1], "%u", &n_loop);
 	        } else if (!strcmp(argv[j], "-l")) {
 		        sscanf(argv[j+1], "%u", &watch);
+	        } else if (!strcmp(argv[j], "-nographics")) {
+		        sscanf(argv[j+1], "%u", &watch);
 	        }
 	    }
 	}
