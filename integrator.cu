@@ -124,7 +124,7 @@ __device__ void loadSharedMemory2D(const UsefulConstants consts, float *T, int *
 	 * bnum:	side number associated with the core, 
 	 * 		from 0 to 3 in the following order: top, left, right, 
 	 *		bottom. if>4 thread is ignored
-	 * c:		number of core to be copied by each thread
+	 * c:		number of pixels to be copied by each thread
 	 * 		= 4 * blockDim.x * n_loop / (blockDim.y * blockDim.x)
 	 * 		remember blockDim.x*n_loop = blockDim.y
 	 * 		usually < 1 -> c = 0, must add 1.

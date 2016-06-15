@@ -1,0 +1,27 @@
+\begin{frame}
+\frametitle{Demonstration}
+%\vspace{-20pt}
+We consider heat propagation in a medium (e.g. a solid) far away from any state transition and we define:
+\begin{description}
+	\item[$\epsilon$]: internal energy density
+	\item[$c$]: specific heat
+	\item[$\rho$]: mass density
+	\item[$T$]: temperature
+\end{description}
+By virtue of the first thermodinamic principle ($\Delta U = \Delta Q - L = \Delta Q$):
+\begin{equation}\label{eq:first}
+	d 
+	\left[ 
+		\int_\Omega 
+		\! c \rho T  
+		\, \mathrm{d}V
+	\right]
+	= 
+	\left[
+		- \int_{\partial \Omega} 
+		\! \vec{J} \cdot \vec{n}
+		\, \mathrm{d}S
+	\right]
+	\mathrm{d}t
+\end{equation}
+\end{frame}
