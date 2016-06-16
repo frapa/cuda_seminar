@@ -14,15 +14,25 @@
  */
 void cpuIntegrate2D(unsigned w, unsigned h, float *T, float *K, float *dT)
 {
+	float *temp = (float *) malloc(w*h * sizeof(float));
+	
 	unsigned i, j;
-	for (i = 1; i < h-1 ; ++i) {
+	for (i = 1; i < h-1; ++i) {
 		for (j = 1; j < w-1; ++j){
-			T[i*w+j] += K[(i-1)*(w-2)+(j-1)] 
+			temp[i*w+j] += K[(i-1)*(w-2)+(j-1)] 
 						* (T[i*w+j+1] + T[i*w+j+1] + T[(i+1)*w+j] + T[(i-1)*w+j] 
 							- 4*T[i*w+j])
 						+ dT[(i-1)*(w-2)+(j-1)]; 
 		}
 	}
+
+	for (i = 1; i < h-1 ; ++i) {
+		for (j = 1; j < w-1; ++j) {
+			T[i*w+j] = temp[i*w+j]
+		}
+	}
+
+	free(temp);
 }
 
 void cpuIntegrate2D_fft()
