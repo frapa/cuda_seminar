@@ -1,10 +1,10 @@
  [+] Colors
  [+] Presentation
- [] Benchmarks
+ [+] Benchmarks
  [+] Fix segmentation fault
  [+] display values in real time
  [x] Unify programs
  [+] Display other texture
- [] CPU
+ [+] CPU
  [x] Avoid overwriting texture
  [+] Parallel copy

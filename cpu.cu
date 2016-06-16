@@ -35,18 +35,58 @@ void cpuIntegrate2D(unsigned w, unsigned h, float *T, float *K, float *dT)
 	free(temp);
 }
 
-void cpuIntegrate2D_fft()
+double *in, *multip;
+fftw_complex *out, *result;
+fftw_plan f, b;
+
+void setupFft(unsigned w, unsigned h, float *T, float *K)
 {
-	unsigned N = 1024;
-	fftw_complex *in, *out;
-	fftw_plan p;
+	in = (double*) fftw_malloc(sizeof(double) * w*h);
+	multip = (double*) fftw_malloc(sizeof(double) * w*h);
+ 	out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * w*h);
+ 	result = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * w*h);
+ 	f = fftw_plan_dft_r2c_2d(w, h, in, out, FFTW_ESTIMATE);
+ 	b = fftw_plan_dft_2d(w, h, out, result, FFTW_BACKWARD, FFTW_ESTIMATE);
 
- 	in = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
- 	out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
- 	p = fftw_plan_dft_1d(N, in, out, FFTW_FORWARD, FFTW_ESTIMATE);
+	unsigned i, j;
+	for (i = 0; i < h; ++i) {
+		for (j = 0; j < w; ++j) {
+			in[i*w + j] = T[(i + 1) * (w + 2) + j + 1];
+			multip[i*w + j] = -4 * M_PI * (i*i + j*j);
+		}
+	}
+}
 
- 	fftw_execute(p); /* repeat as needed */
-
- 	fftw_destroy_plan(p);
+void cleanupFft()
+{
+ 	fftw_destroy_plan(f);
+ 	fftw_destroy_plan(b);
  	fftw_free(in); fftw_free(out);
+ 	fftw_free(multip); fftw_free(result);
+}
+
+void cpuIntegrate2D_fft(unsigned w, unsigned h)
+{
+	// Transform T to Fourier domain
+ 	fftw_execute(f);
+
+	// Convolve
+	unsigned i, j;
+	for (i = 0; i < h; ++i) {
+		for (j = 0; j < w; ++j) {
+			out[i*w + j][0] += out[i*w + j][0] * multip[i*w + j];
+			out[i*w + j][1] += out[i*w + j][1] * multip[i*w + j];
+		}
+	}
+
+	// Backtransform
+	fftw_execute(b);
+
+	// Copy back result
+	for (i = 0; i < h; ++i) {
+		for (j = 0; j < w; ++j) {
+			in[i*w + j] = result[i*w + j][0];
+		}
+	}
+
 }

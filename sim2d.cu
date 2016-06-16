@@ -273,6 +273,42 @@ void stepCpu(float *T, float *K)
 #endif
 }
 
+void stepFft()
+{
+	clock_t start_host, end_host; // Used to check time of execution
+
+	// START SIMULATION
+	start_host = clock();
+
+	cpuIntegrate2D_fft(w, h);
+
+	end_host = clock();
+
+	cpu_step = ((double)  (end_host - start_host));
+	cpu_time += cpu_step / CLOCKS_PER_SEC;
+	++loop_done;
+
+	// Print time statistics
+#ifdef TIME	
+	FILE *ftime;
+	if (loop_done == watch){
+		char nfile[257];		
+		sprintf(nfile, "check/time-%d-%d.txt", block_num.x, n_loop);
+		//ftime = fopen("check/exe_time.txt", "a");
+		ftime = fopen(nfile, "a");
+		if (ftime == NULL){
+		  	printf("\nError while opening file mean_time.txt\n");
+		  	perror("Error while opnening file mean_time.txt");
+		  	exit(1);
+		}
+		fprintf(ftime, "%d    %f\n", n_loop, cpu_time/(double)loop_done);
+		fclose(ftime);
+		
+		printf("Time saved\n");
+	}
+#endif
+}
+
 
 int main(int argc, char **argv)
 {
@@ -327,6 +363,10 @@ int main(int argc, char **argv)
 		        sscanf(argv[j+1], "%u", &graphics);
 				iterations_per_frame = 1;
 				cpu = 1;
+	        } else if (!strcmp(argv[j], "-fft")) {
+		        sscanf(argv[j+1], "%u", &graphics);
+				iterations_per_frame = 1;
+				cpu = 2;
 	        }
 	    }
 	}
@@ -373,7 +413,7 @@ int main(int argc, char **argv)
 
 	// Now that we are done loading the simulation, we start OpenGL
 	if (!graphics) {
-		initGL(&argc, argv, "Heat equation", step, 512, 512);
+		initGL(&argc, argv, "Heat equation", step, w, h);
 
 		cudaGLSetGLDevice(0);
 
@@ -397,7 +437,7 @@ int main(int argc, char **argv)
 		}
 		double time = (clock() - start) / CLOCKS_PER_SEC;
 		printf("\nTotal time: %f s\n", time);
-	} else {
+	} else if (cpu == 1) {
 		unsigned h;
 		double start = clock();
 		for (h = 0; h < graphics; ++h) {
@@ -405,6 +445,18 @@ int main(int argc, char **argv)
 		}
 		double time = (clock() - start) / CLOCKS_PER_SEC;
 		printf("\nTotal time: %f s\n", time);
+	} else {
+		setupFft(w, h, T, K);
+
+		unsigned h;
+		double start = clock();
+		for (h = 0; h < graphics; ++h) {
+			stepFft();
+		}
+		double time = (clock() - start) / CLOCKS_PER_SEC;
+		printf("\nTotal time: %f s\n", time);
+
+		cleanupFft();
 	}
 	
 	// Looks like code after glutMainLoop(); doesn´t work... 	
