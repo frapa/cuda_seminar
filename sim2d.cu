@@ -25,7 +25,7 @@ int *operation, *d_operation;	// Serve a controllare che il programma ricalcoli 
 uchar4 *image;
 double cpu_time, cpu_step;
 size_t temp_size, op_size;
-
+unsigned graphics = 0, iterations_per_frame = 24;
 
 void readTiff(char *filename, float **raster, unsigned *w, unsigned *h, 
 	      float scale)
@@ -168,12 +168,17 @@ void step()
 	// START SIMULATION
 	start_host = clock();
 	unsigned z;
-	for (z = 0; z < 24; ++z) {
-		stepSimulation2D<<<block_num, thread_num, size_shared>>>
-			(T_device, K_device, dT_device, n_loop, image, d_operation);
+	for (z = 0; z < iterations_per_frame; ++z) {
+	    if (z == iterations_per_frame-1) {
+		    stepSimulation2D<<<block_num, thread_num, size_shared>>>
+			    (T_device, K_device, dT_device, n_loop, image, 1);
+	    } else {
+		    stepSimulation2D<<<block_num, thread_num, size_shared>>>
+			    (T_device, K_device, dT_device, n_loop, image, 0);
+	    }
 	}
 	cudaError_t error = cudaDeviceSynchronize();
-	end_host=clock();
+	end_host = clock();
 
 	if (error != cudaSuccess) {
 		printf("Error while running kernel: %s\n", cudaGetErrorString(error));
@@ -200,7 +205,10 @@ void step()
 		
 		printf("Time saved\n");
 	}
-	ftime = fopen("check/exe_time.txt", "a");
+	char nfile[257];
+	sprintf(nfile, "check/exe_time%d.txt", n_loop);
+	//ftime = fopen("check/exe_time.txt", "a");
+	ftime = fopen(nfile, "a");
 	if (ftime == NULL){
 	  	printf("\nError while opening file mean_time.txt\n");
 	  	perror("Error while opnening file mean_time.txt");
@@ -211,12 +219,14 @@ void step()
 #endif
 
 	// This copies image to texture
-	cudaMemcpyToArray(tex, 0, 0, image, w*h*4, cudaMemcpyDeviceToDevice);
-
-	unmap_and_draw();
-
-	glutSwapBuffers();
-	glutPostRedisplay();
+	if (!graphics) {
+	    cudaMemcpyToArray(tex, 0, 0, image, w*h*4, cudaMemcpyDeviceToDevice);
+    
+	    unmap_and_draw();
+    
+	    glutSwapBuffers();
+	    glutPostRedisplay();
+	}
 }
 
 int main(int argc, char **argv)
@@ -263,6 +273,11 @@ int main(int argc, char **argv)
 		        sscanf(argv[j+1], "%u", &n_loop);
 	        } else if (!strcmp(argv[j], "-l")) {
 		        sscanf(argv[j+1], "%u", &watch);
+	        } else if (!strcmp(argv[j], "-nographics")) {
+		        sscanf(argv[j+1], "%u", &graphics);
+		        iterations_per_frame = 1;
+	        } else if (!strcmp(argv[j], "-f")) {
+		        sscanf(argv[j+1], "%u", &iterations_per_frame);
 	        }
 	    }
 	}
@@ -303,21 +318,35 @@ int main(int argc, char **argv)
 
 	cudaMalloc(&image, w*h*4);
 
-	// Now that we are done loading the simulation, we start OpenGL
-	initGL(&argc, argv, "Heat equation", step, 512, 512);
-
 	cudaSetDevice(0);
-	cudaGLSetGLDevice(0);
 
-	register_texture(w, h);
-	glutKeyboardFunc(on_key_pressed);
+	// Now that we are done loading the simulation, we start OpenGL
+	if (!graphics) {
+		initGL(&argc, argv, "Heat equation", step, 512, 512);
+
+		cudaGLSetGLDevice(0);
+
+		register_texture(w, h);
+		glutKeyboardFunc(on_key_pressed);
+	}
 	
 	//register_array(n * 2, sizeof(float), n);
 
 	// Start simulation
 	loop_done = 0;
 	cpu_time = 0;
-	glutMainLoop();
+
+	if (!graphics) {
+		glutMainLoop();
+	} else {
+		unsigned h;
+		double start = clock();
+		for (h = 0; h < graphics; ++h) {
+			step();
+		}
+		double time = (clock() - start) / CLOCKS_PER_SEC;
+		printf("\nTotal time: %f s\n", time);
+	}
 	
 	// Looks like code after glutMainLoop(); doesn´t work... 	
 

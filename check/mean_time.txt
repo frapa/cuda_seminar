@@ -1,4 +1,0 @@
-
-Number of loops: 4
-Total Time: 4.763458
-Mean Time per Step: 0.015878
