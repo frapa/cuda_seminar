@@ -55,11 +55,13 @@ char * readIntoArray(const char *filename)
 
 void initShaders()
 {
+    /* Vertex shader */
 	char *vertex_shader = readIntoArray("shaders/vertex.vert");
 	vertexShaderId = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vertexShaderId, 1, (const char **)&vertex_shader, NULL);
 	glCompileShader(vertexShaderId);
 	
+	/* Error checking */
 	GLint success = 1;
 	GLchar infoLog[1001];
 	glGetShaderiv(vertexShaderId, GL_COMPILE_STATUS, &success);
@@ -69,11 +71,13 @@ void initShaders()
 		printf("Vertex shader error: %s\n", infoLog);
 	}
 
+    /* Fragment shader */
 	char *fragment_shader = readIntoArray("shaders/fragment.frag");
 	fragmentShaderId = glCreateShader(GL_FRAGMENT_SHADER);
 	glShaderSource(fragmentShaderId, 1, (const char **)&fragment_shader, NULL);
 	glCompileShader(fragmentShaderId);
 	
+	/* Error checking */
 	glGetShaderiv(fragmentShaderId, GL_COMPILE_STATUS, &success);
 
 	if (success == GL_FALSE) {
@@ -81,15 +85,18 @@ void initShaders()
 		printf("Fragment shader error: %s\n", infoLog);
 	}
 
+    /* Creante and link program */
 	shaderProgram = glCreateProgram();
 
 	glAttachShader(shaderProgram, vertexShaderId);
 	glAttachShader(shaderProgram, fragmentShaderId);
 
 	glLinkProgram(shaderProgram);
-
+    
+    // Use this program
 	glUseProgram(shaderProgram);
 
+    // Clean up
 	free(vertex_shader);
 	free(fragment_shader);
 }
@@ -163,10 +170,6 @@ void register_texture(unsigned w, unsigned h)
 	width = w;
 	height = h;
 
-	/*glGenBuffers(1, &texture_pbo_gl);
-	glBindBuffer(GL_PIXEL_UNPACK_BUFFER, texture_pbo_gl);
-	glBufferData(GL_PIXEL_UNPACK_BUFFER, width*height*4, NULL, GL_DYNAMIC_COPY);*/
-
 	// Tell OpenGl we want to allocate a texture
 	glGenTextures(1, &texture_gl);
 	// Tell OpenGl we are going to modify the state of the following texture
@@ -177,23 +180,12 @@ void register_texture(unsigned w, unsigned h)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	
 	// Actually allocate memory
-	/*unsigned char *img = (unsigned char *) malloc(w*h*4);
-	unsigned i = 0;
-	for (i = 0; i < w*h; ++i)
-	{
-			img[4*i] = 0;
-			img[4*i + 1] = 0;
-			img[4*i + 2] = 255;
-			img[4*i + 3] = 255;
-	}*/
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);	
 
 	// Tell OpenGl we finished modifying this etxture
 	glBindTexture(GL_TEXTURE_2D, 0);
 
 	// Register texture for use with cuda
-	//cudaError_t error = cudaGLRegisterBufferObject(texture_pbo_gl);
-	//cudaError_t error = cudaGraphicsGLRegisterBuffer(&texture_pbo_cuda, texture_pbo_gl, cudaGraphicsMapFlagsWriteDiscard);
 	cudaGraphicsGLRegisterImage(&texture_cuda, texture_gl, GL_TEXTURE_2D, cudaGraphicsMapFlagsWriteDiscard);
 		
 
@@ -287,9 +279,8 @@ void draw_texture()
 {
     // Select texture unit
    	glActiveTexture(GL_TEXTURE0);
-	//glBindBuffer(GL_PIXEL_UNPACK_BUFFER, texture_pbo_gl);  
-	glBindTexture(GL_TEXTURE_2D, texture_gl); 
-	//glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	// Use this texture
+	glBindTexture(GL_TEXTURE_2D, texture_gl);
 	
 	// Assign texture unit index to the fragment shader
 	glUniform1i(1, 0); // location = 1, texture unit = 0
@@ -322,7 +313,6 @@ void unmap_and_draw()
 	
 	if (enabled_mask & 0x02) {
 	    cudaGraphicsUnmapResources(1, &texture_cuda, 0);
-	    //cudaError_t error = cudaGLUnmapBufferObject(texture_pbo_gl);
 		
 #ifdef DEBUG	
 		cudaError_t error = cudaDeviceSynchronize();

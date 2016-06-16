@@ -3,7 +3,7 @@
  [] Benchmarks
  [+] Fix segmentation fault
  [+] display values in real time
- [] Unify programs
+ [x] Unify programs
  [] Display other texture
- [] Avoid overwriting texture
+ [x] Avoid overwriting texture
  [] Parallel copy
