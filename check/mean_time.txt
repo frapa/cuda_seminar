@@ -1,0 +1,752 @@
+
+Number of loops: 2
+Total Time: 0.104868
+Mean Time per Step: 0.000105
+
+Number of loops: 2
+Total Time: 0.101937
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.101608
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.101308
+Mean Time per Step: 0.000101
+
+Number of loops: 2
+Total Time: 0.105765
+Mean Time per Step: 0.000106
+
+Number of loops: 2
+Total Time: 0.102838
+Mean Time per Step: 0.000103
+
+Number of loops: 2
+Total Time: 0.102388
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.102021
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.103038
+Mean Time per Step: 0.000103
+
+Number of loops: 2
+Total Time: 0.102093
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.105915
+Mean Time per Step: 0.000106
+
+Number of loops: 2
+Total Time: 0.101669
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.102053
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.102006
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.101594
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.102644
+Mean Time per Step: 0.000103
+
+Number of loops: 2
+Total Time: 0.102232
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.102812
+Mean Time per Step: 0.000103
+
+Number of loops: 2
+Total Time: 0.101725
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.102507
+Mean Time per Step: 0.000103
+
+Number of loops: 2
+Total Time: 0.102853
+Mean Time per Step: 0.000103
+
+Number of loops: 2
+Total Time: 0.102386
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.101533
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.102660
+Mean Time per Step: 0.000103
+
+Number of loops: 2
+Total Time: 0.102515
+Mean Time per Step: 0.000103
+
+Number of loops: 2
+Total Time: 0.102464
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.102099
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.105831
+Mean Time per Step: 0.000106
+
+Number of loops: 2
+Total Time: 0.102391
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.105993
+Mean Time per Step: 0.000106
+
+Number of loops: 2
+Total Time: 0.102175
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.102433
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.102660
+Mean Time per Step: 0.000103
+
+Number of loops: 2
+Total Time: 0.102379
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.102143
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.102965
+Mean Time per Step: 0.000103
+
+Number of loops: 2
+Total Time: 0.098166
+Mean Time per Step: 0.000098
+
+Number of loops: 2
+Total Time: 0.101705
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.102477
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.103505
+Mean Time per Step: 0.000104
+
+Number of loops: 2
+Total Time: 0.102135
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.102069
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.101770
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.102581
+Mean Time per Step: 0.000103
+
+Number of loops: 2
+Total Time: 0.102956
+Mean Time per Step: 0.000103
+
+Number of loops: 2
+Total Time: 0.102738
+Mean Time per Step: 0.000103
+
+Number of loops: 2
+Total Time: 0.102251
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.102869
+Mean Time per Step: 0.000103
+
+Number of loops: 2
+Total Time: 0.101888
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.101838
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.102307
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.103876
+Mean Time per Step: 0.000104
+
+Number of loops: 2
+Total Time: 0.102882
+Mean Time per Step: 0.000103
+
+Number of loops: 2
+Total Time: 0.103221
+Mean Time per Step: 0.000103
+
+Number of loops: 2
+Total Time: 0.102253
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.098632
+Mean Time per Step: 0.000099
+
+Number of loops: 2
+Total Time: 0.103500
+Mean Time per Step: 0.000104
+
+Number of loops: 2
+Total Time: 0.102259
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.101856
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.104588
+Mean Time per Step: 0.000105
+
+Number of loops: 2
+Total Time: 0.102478
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.102017
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.109484
+Mean Time per Step: 0.000109
+
+Number of loops: 2
+Total Time: 0.128960
+Mean Time per Step: 0.000129
+
+Number of loops: 2
+Total Time: 0.127491
+Mean Time per Step: 0.000127
+
+Number of loops: 2
+Total Time: 0.124661
+Mean Time per Step: 0.000125
+
+Number of loops: 2
+Total Time: 0.126478
+Mean Time per Step: 0.000126
+
+Number of loops: 2
+Total Time: 0.128016
+Mean Time per Step: 0.000128
+
+Number of loops: 2
+Total Time: 0.127655
+Mean Time per Step: 0.000128
+
+Number of loops: 2
+Total Time: 0.125432
+Mean Time per Step: 0.000125
+
+Number of loops: 2
+Total Time: 0.128157
+Mean Time per Step: 0.000128
+
+Number of loops: 2
+Total Time: 0.126535
+Mean Time per Step: 0.000127
+
+Number of loops: 2
+Total Time: 0.130673
+Mean Time per Step: 0.000131
+
+Number of loops: 2
+Total Time: 0.126299
+Mean Time per Step: 0.000126
+
+Number of loops: 2
+Total Time: 0.126670
+Mean Time per Step: 0.000127
+
+Number of loops: 2
+Total Time: 0.128074
+Mean Time per Step: 0.000128
+
+Number of loops: 2
+Total Time: 0.125860
+Mean Time per Step: 0.000126
+
+Number of loops: 2
+Total Time: 0.122863
+Mean Time per Step: 0.000123
+
+Number of loops: 2
+Total Time: 0.124533
+Mean Time per Step: 0.000125
+
+Number of loops: 2
+Total Time: 0.122892
+Mean Time per Step: 0.000123
+
+Number of loops: 2
+Total Time: 0.125411
+Mean Time per Step: 0.000125
+
+Number of loops: 2
+Total Time: 0.128415
+Mean Time per Step: 0.000128
+
+Number of loops: 2
+Total Time: 0.130467
+Mean Time per Step: 0.000130
+
+Number of loops: 2
+Total Time: 0.127601
+Mean Time per Step: 0.000128
+
+Number of loops: 2
+Total Time: 0.128823
+Mean Time per Step: 0.000129
+
+Number of loops: 2
+Total Time: 0.131246
+Mean Time per Step: 0.000131
+
+Number of loops: 2
+Total Time: 0.125808
+Mean Time per Step: 0.000126
+
+Number of loops: 2
+Total Time: 0.125361
+Mean Time per Step: 0.000125
+
+Number of loops: 2
+Total Time: 0.125478
+Mean Time per Step: 0.000125
+
+Number of loops: 2
+Total Time: 0.133845
+Mean Time per Step: 0.000134
+
+Number of loops: 2
+Total Time: 0.128008
+Mean Time per Step: 0.000128
+
+Number of loops: 2
+Total Time: 0.125003
+Mean Time per Step: 0.000125
+
+Number of loops: 2
+Total Time: 0.125324
+Mean Time per Step: 0.000125
+
+Number of loops: 2
+Total Time: 0.133460
+Mean Time per Step: 0.000133
+
+Number of loops: 2
+Total Time: 0.123914
+Mean Time per Step: 0.000124
+
+Number of loops: 2
+Total Time: 0.125314
+Mean Time per Step: 0.000125
+
+Number of loops: 2
+Total Time: 0.123076
+Mean Time per Step: 0.000123
+
+Number of loops: 2
+Total Time: 0.120582
+Mean Time per Step: 0.000121
+
+Number of loops: 2
+Total Time: 0.122679
+Mean Time per Step: 0.000123
+
+Number of loops: 2
+Total Time: 0.120351
+Mean Time per Step: 0.000120
+
+Number of loops: 2
+Total Time: 0.126547
+Mean Time per Step: 0.000127
+
+Number of loops: 2
+Total Time: 0.124896
+Mean Time per Step: 0.000125
+
+Number of loops: 2
+Total Time: 0.125618
+Mean Time per Step: 0.000126
+
+Number of loops: 2
+Total Time: 0.124172
+Mean Time per Step: 0.000124
+
+Number of loops: 2
+Total Time: 0.128761
+Mean Time per Step: 0.000129
+
+Number of loops: 2
+Total Time: 0.123416
+Mean Time per Step: 0.000123
+
+Number of loops: 2
+Total Time: 0.126354
+Mean Time per Step: 0.000126
+
+Number of loops: 2
+Total Time: 0.126538
+Mean Time per Step: 0.000127
+
+Number of loops: 2
+Total Time: 0.129559
+Mean Time per Step: 0.000130
+
+Number of loops: 2
+Total Time: 0.124865
+Mean Time per Step: 0.000125
+
+Number of loops: 2
+Total Time: 0.123535
+Mean Time per Step: 0.000124
+
+Number of loops: 2
+Total Time: 0.126022
+Mean Time per Step: 0.000126
+
+Number of loops: 2
+Total Time: 0.128466
+Mean Time per Step: 0.000128
+
+Number of loops: 2
+Total Time: 0.124884
+Mean Time per Step: 0.000125
+
+Number of loops: 2
+Total Time: 0.128616
+Mean Time per Step: 0.000129
+
+Number of loops: 2
+Total Time: 0.126507
+Mean Time per Step: 0.000127
+
+Number of loops: 2
+Total Time: 0.125461
+Mean Time per Step: 0.000125
+
+Number of loops: 2
+Total Time: 0.123673
+Mean Time per Step: 0.000124
+
+Number of loops: 2
+Total Time: 0.126846
+Mean Time per Step: 0.000127
+
+Number of loops: 2
+Total Time: 0.126168
+Mean Time per Step: 0.000126
+
+Number of loops: 2
+Total Time: 0.123015
+Mean Time per Step: 0.000123
+
+Number of loops: 2
+Total Time: 0.125770
+Mean Time per Step: 0.000126
+
+Number of loops: 2
+Total Time: 0.128860
+Mean Time per Step: 0.000129
+
+Number of loops: 2
+Total Time: 0.126715
+Mean Time per Step: 0.000127
+
+Number of loops: 2
+Total Time: 0.129855
+Mean Time per Step: 0.000130
+
+Number of loops: 2
+Total Time: 0.124881
+Mean Time per Step: 0.000125
+
+Number of loops: 2
+Total Time: 0.127385
+Mean Time per Step: 0.000127
+
+Number of loops: 2
+Total Time: 0.126390
+Mean Time per Step: 0.000126
+
+Number of loops: 2
+Total Time: 0.128898
+Mean Time per Step: 0.000129
+
+Number of loops: 2
+Total Time: 0.128380
+Mean Time per Step: 0.000128
+
+Number of loops: 2
+Total Time: 0.123690
+Mean Time per Step: 0.000124
+
+Number of loops: 2
+Total Time: 0.126980
+Mean Time per Step: 0.000127
+
+Number of loops: 2
+Total Time: 0.127032
+Mean Time per Step: 0.000127
+
+Number of loops: 2
+Total Time: 0.101486
+Mean Time per Step: 0.000101
+
+Number of loops: 2
+Total Time: 0.104343
+Mean Time per Step: 0.000104
+
+Number of loops: 2
+Total Time: 0.102092
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.104707
+Mean Time per Step: 0.000105
+
+Number of loops: 2
+Total Time: 0.100618
+Mean Time per Step: 0.000101
+
+Number of loops: 2
+Total Time: 0.100974
+Mean Time per Step: 0.000101
+
+Number of loops: 2
+Total Time: 0.105527
+Mean Time per Step: 0.000106
+
+Number of loops: 2
+Total Time: 0.099726
+Mean Time per Step: 0.000100
+
+Number of loops: 2
+Total Time: 0.109988
+Mean Time per Step: 0.000110
+
+Number of loops: 2
+Total Time: 0.125340
+Mean Time per Step: 0.000125
+
+Number of loops: 2
+Total Time: 0.125191
+Mean Time per Step: 0.000125
+
+Number of loops: 2
+Total Time: 0.128450
+Mean Time per Step: 0.000128
+
+Number of loops: 2
+Total Time: 0.125202
+Mean Time per Step: 0.000125
+
+Number of loops: 2
+Total Time: 0.127081
+Mean Time per Step: 0.000127
+
+Number of loops: 2
+Total Time: 0.123723
+Mean Time per Step: 0.000124
+
+Number of loops: 2
+Total Time: 0.126262
+Mean Time per Step: 0.000126
+
+Number of loops: 2
+Total Time: 0.126356
+Mean Time per Step: 0.000126
+
+Number of loops: 2
+Total Time: 0.124775
+Mean Time per Step: 0.000125
+
+Number of loops: 2
+Total Time: 0.123901
+Mean Time per Step: 0.000124
+
+Number of loops: 2
+Total Time: 0.125806
+Mean Time per Step: 0.000126
+
+Number of loops: 2
+Total Time: 0.124555
+Mean Time per Step: 0.000125
+
+Number of loops: 2
+Total Time: 0.125066
+Mean Time per Step: 0.000125
+
+Number of loops: 2
+Total Time: 0.098631
+Mean Time per Step: 0.000099
+
+Number of loops: 2
+Total Time: 0.101204
+Mean Time per Step: 0.000101
+
+Number of loops: 2
+Total Time: 0.101523
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.104089
+Mean Time per Step: 0.000104
+
+Number of loops: 2
+Total Time: 0.102008
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.100240
+Mean Time per Step: 0.000100
+
+Number of loops: 2
+Total Time: 0.101272
+Mean Time per Step: 0.000101
+
+Number of loops: 2
+Total Time: 0.101777
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.100989
+Mean Time per Step: 0.000101
+
+Number of loops: 2
+Total Time: 0.102399
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.100234
+Mean Time per Step: 0.000100
+
+Number of loops: 2
+Total Time: 0.102325
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.101741
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.102231
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.101983
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.100867
+Mean Time per Step: 0.000101
+
+Number of loops: 2
+Total Time: 0.100345
+Mean Time per Step: 0.000100
+
+Number of loops: 2
+Total Time: 0.101041
+Mean Time per Step: 0.000101
+
+Number of loops: 2
+Total Time: 0.102242
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.103117
+Mean Time per Step: 0.000103
+
+Number of loops: 2
+Total Time: 0.102017
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.101872
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.101866
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.101201
+Mean Time per Step: 0.000101
+
+Number of loops: 2
+Total Time: 0.102264
+Mean Time per Step: 0.000102
+
+Number of loops: 2
+Total Time: 0.098354
+Mean Time per Step: 0.000098
+
+Number of loops: 2
+Total Time: 0.103777
+Mean Time per Step: 0.000104
+
+Number of loops: 2
+Total Time: 0.103416
+Mean Time per Step: 0.000103
+
+Number of loops: 2
+Total Time: 0.100699
+Mean Time per Step: 0.000101
+
+Number of loops: 2
+Total Time: 0.104736
+Mean Time per Step: 0.000105
+
+Number of loops: 2
+Total Time: 0.100951
+Mean Time per Step: 0.000101
+
+Number of loops: 2
+Total Time: 0.100050
+Mean Time per Step: 0.000100
+
+Number of loops: 2
+Total Time: 0.100629
+Mean Time per Step: 0.000101
