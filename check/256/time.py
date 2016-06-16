@@ -2,7 +2,7 @@ import numpy as np
 import string, sys, math
 
 root = "time-16"
-name = [root+"-"+str(i)+".txt" for i in [2]] 
+name = [root+"-"+str(i)+".txt" for i in [4]] 
 
 out_file = open("16blocks.txt","w")
 k = 2

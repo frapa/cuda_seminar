@@ -1,0 +1,21 @@
+set term eps
+set output "speed.eps"
+
+set linetype 1 lw 2
+set linetype 2 lw 2
+set linetype 2 lw 2
+set linetype 2 lw 2
+
+set xlabel "size"
+set ylabel "mean time per step"
+set logscale x 2
+set logscale y 10
+
+plot [200:1100][0.00001:0.05] "cpu.txt" using 1:2 with lines title "cpu",\
+						"cpu.txt" with errorbars title "",\
+						"gpu.txt" using 1:2 with lines title "gpu",\
+						"gpu.txt" with errorbars title "",\
+						
+set term png
+set output "speed.png"
+replot
