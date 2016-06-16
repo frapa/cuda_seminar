@@ -1,34 +1,24 @@
-
-\frametitle{Mapping resources}
-
-\vspace{3mm}
-
-When CUDA writes to resources, it needs to map the resource,
-to avoid conflicts with OpenGL.
-
-\vspace{2mm}
-
+\frametitle{Performances}
+\framesubtitle{GPU}
 \begin{lstlisting}
-// cudaArray is an opaque object
-cudaArray *texture_array;
-float *image;
+Device 0: "GeForce GTX 780"
 
-// Enables access from CUDA
-cudaGraphicsMapResources(1, &texture_cuda, 0);
+CUDA Driver Version / Runtime Version          8.0 / 6.5
+CUDA Capability Major/Minor version number:    3.5
+Total amount of global memory:                 3071 MBytes
+(12) Multiprocessors, (192) CUDA Cores/MP:     2304 CUDA Cores
+GPU Clock rate:                                941 MHz
+Memory Clock rate:                             3004 Mhz
+Memory Bus Width:                              384-bit
+L2 Cache Size:                                 1572864 bytes
 
-// Get pointer of the texture
-cudaGraphicsSubResourceGetMappedArray(
-	&texture_array, texture_cuda, 0, 0);
-
-/* ... do whatever you want with CUDA on 'image' ... */
-
-/* Copy cuda array to texture position
-	NOTE: no transfer between GPU and CPU */
-cudaMemcpyToArray(texture_array, 0, 0, image,
-	size, cudaMemcpyDeviceToDevice);
-
-// Frees resource for use with OpenGL
-cudaGraphicsUnmapResources(1, &texture_cuda, 0);
-
+Total amount of constant memory:               65536 bytes
+Total amount of shared memory per block:       49152 bytes
+Total number of registers available per block: 65536
+Warp size:                                     32
+Maximum number of threads per multiprocessor:  2048
+Maximum number of threads per block:           1024
 \end{lstlisting}
+\begin{center}
 
+\end{center}
