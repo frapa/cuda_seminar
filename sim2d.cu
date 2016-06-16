@@ -192,19 +192,21 @@ void step()
 #ifdef TIME	
 	FILE *ftime;
 	if (loop_done == watch){
-		ftime = fopen("check/mean_time.txt", "a");
+		char nfile[257];		
+		sprintf(nfile, "check/time-%d-%d.txt", block_num.x, n_loop);
+		//ftime = fopen("check/exe_time.txt", "a");
+		ftime = fopen(nfile, "a");
 		if (ftime == NULL){
 		  	printf("\nError while opening file mean_time.txt\n");
 		  	perror("Error while opnening file mean_time.txt");
 		  	exit(1);
 		}
-		fprintf(ftime, "\nNumber of loops: %d\n", n_loop);
-		fprintf(ftime, "Total Time: %f\nMean Time per Step: %f\n", cpu_time, 
-				cpu_time/(double)loop_done);
+		fprintf(ftime, "%d    %f\n", n_loop, cpu_time/(double)loop_done);
 		fclose(ftime);
 		
 		printf("Time saved\n");
 	}
+	/*
 	char nfile[257];
 	sprintf(nfile, "check/exe_time%d.txt", n_loop);
 	//ftime = fopen("check/exe_time.txt", "a");
@@ -215,7 +217,7 @@ void step()
 	  	exit(1);
 	}
 	fprintf(ftime, "%f\n", cpu_step / CLOCKS_PER_SEC);
-	fclose(ftime);
+	fclose(ftime);*/
 #endif
 
 	// This copies image to texture
