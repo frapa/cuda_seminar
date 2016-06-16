@@ -1,0 +1,9 @@
+
+\frametitle{OpenGL Textures}
+
+Texture - is an image that is mapped to vertices.
+
+\begin{center}
+\includegraphics[width=\textwidth]{images/uv.png}
+\end{center}
+

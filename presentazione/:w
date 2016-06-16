@@ -9,14 +9,8 @@
 \usepackage{amssymb}
 \usepackage{graphicx}
 \usepackage{listings}
-\usepackage{pxfonts}
 
-\lstset{language=C,basicstyle=\ttfamily\scriptsize,
-                keywordstyle=\color{blue},
-				identifierstyle=\bfseries,
-                stringstyle=\color{red},
-                commentstyle=\color{blue},
-}
+\lstset{numbers=left,language=C,basicstyle=\ttfamily\small}
 
 %\usetheme{Berkeley}
 \usetheme{Goettingen}
