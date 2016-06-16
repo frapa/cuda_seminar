@@ -6,6 +6,7 @@ out vec4 colorOut;
 
 void main() {
 	float strength = texture(tex, texCoord).x;
+	float k = texture(tex, texCoord).y * 0.5;
 
 	//	Colormap
 	//		1 		red			(1, 0, 0)
@@ -25,5 +26,5 @@ void main() {
 		0 : ((strength > 0.25) ?
 			(0.5 - strength) * 4 : 1);
 
-    colorOut = vec4(red, green, blue, 1);
+    colorOut = vec4(red + k, green + k, blue + k, 1);
 }

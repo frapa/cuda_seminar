@@ -99,6 +99,8 @@ VBO (Vertex Buffer Object) - is an array of data in the GPU memory for storing v
 \vspace{5mm}
 
 \begin{lstlisting}
+GLuint vbo;
+
 // Tell OpenGL we want to allocate array
 glGenBuffers(1, &vbo);
 /* Tell OpenGL we want to modify the state
@@ -134,6 +136,8 @@ Texture - is an image that is mapped to vertices.
 \frametitle{OpenGL Textures}
 
 \begin{lstlisting}[basicstyle=\fontsize{7pt}{8pt}\ttfamily]
+GLuint texture;
+
 // Tell OpenGl we want to allocate a texture
 glGenTextures(1, &texture);
 /* Tell OpenGl we are going to modify the state
@@ -273,15 +277,19 @@ glBindTexture(GL_TEXTURE_2D, 0);
 
 \frametitle{OpenGL-CUDA interperability}
 
-CUDA and OpenGL can interoperate.
-\newline
-\\
-
 Applications:
 \begin{itemize}
     \item{Real-time data visualization.}
     \item{Videogames and 3D application can use CUDA for physics simulation or other computations.}
-    \item{Geometry shader - can add vertices.}
+\end{itemize}
+
+\vspace{5mm}
+
+Further notes:
+\begin{itemize}
+    \item{Very fast because memory do not need to be transfered out of the GPU.}
+    \item{Slower than pure CUDA, because GPU is also used to render data.}
+    \item{Not suitable in every situation, e.g. when data needs to be analyzed quantitatively.}
 \end{itemize}
 
 \end{frame}
@@ -291,14 +299,79 @@ Applications:
 
 \frametitle{Execution model}
 
+CUDA kernels and OpenGL run on the same GPU sequentially.
+
+\begin{center}
+\includegraphics[width=\textwidth]{images/cuda_gl.png}
+\end{center}
+
+V-sync needs to be disabled not to limit execution speed.
 
 \end{frame}
 % ---------------------------------------------------------------------
 
 \begin{frame}[fragile]
 
-\frametitle{Registering and mapping}
+\frametitle{Registering resources}
 
+OpenGL resources can be written by CUDA (interoperability is one-way).
+Need registering before use.
+
+\vspace{5mm}
+
+\begin{lstlisting}
+GLuint vbo_gl;
+GLuint texture_gl;
+struct cudaGraphicsResource *vbo_cuda;
+struct cudaGraphicsResource *texture_cuda;
+
+// Register array for use with cuda
+cudaGraphicsGLRegisterBuffer(&vbo_cuda, vbo_gl,
+	cudaGraphicsMapFlagsWriteDiscard);
+
+// Register texture for use with cuda
+cudaGraphicsGLRegisterImage(&texture_cuda, texture_gl,
+	GL_TEXTURE_2D, cudaGraphicsMapFlagsWriteDiscard);
+\end{lstlisting}
+
+\end{frame}
+
+% ---------------------------------------------------------------------
+
+\begin{frame}[fragile]
+
+\frametitle{Mapping resources}
+
+\vspace{3mm}
+
+When CUDA writes to resources, it needs to map the resource,
+to avoid conflicts with OpenGL.
+
+\vspace{2mm}
+
+\begin{lstlisting}
+// cudaArray is an opaque object
+cudaArray *texture_array;
+float *image;
+
+// Enables access from CUDA
+cudaGraphicsMapResources(1, &texture_cuda, 0);
+
+// Get pointer of the texture
+cudaGraphicsSubResourceGetMappedArray(
+	&texture_array, texture_cuda, 0, 0);
+
+/* ... do whatever you want with CUDA on 'image' ... */
+
+/* Copy cuda array to texture position
+	NOTE: no transfer between GPU and CPU */
+cudaMemcpyToArray(texture_array, 0, 0, image,
+	size, cudaMemcpyDeviceToDevice);
+
+// Frees resource for use with OpenGL
+cudaGraphicsUnmapResources(1, &texture_cuda, 0);
+
+\end{lstlisting}
 
 \end{frame}
 
