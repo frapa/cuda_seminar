@@ -4,4 +4,4 @@
 \beamer@sectionintoc {1}{Heat Equation}{3}{0}{1}
 \beamer@sectionintoc {2}{Our Code}{7}{0}{2}
 \beamer@sectionintoc {3}{Performances}{15}{0}{3}
-\beamer@sectionintoc {4}{OpenGL-CUDA interoperability}{21}{0}{4}
+\beamer@sectionintoc {4}{OpenGL-CUDA interoperability}{20}{0}{4}

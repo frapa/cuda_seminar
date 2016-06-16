@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2016.6.7)  16 JUN 2016 11:09
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2016.6.7)  16 JUN 2016 11:30
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1484,17 +1484,12 @@ Package epstopdf Info: Source file: <images/borders.eps>
 (epstopdf)                    date: 2016-06-16 11:09:16
 (epstopdf)                    size: 19008 bytes
 (epstopdf)             Output file: <images/borders-eps-converted-to.pdf>
-(epstopdf)                    date: 2016-06-16 11:08:59
+(epstopdf)                    date: 2016-06-16 11:09:19
 (epstopdf)                    size: 7976 bytes
 (epstopdf)             Command: <repstopdf --outfile=images/borders-eps-convert
 ed-to.pdf images/borders.eps>
 (epstopdf)             \includegraphics on input line 3.
-runsystem(repstopdf --outfile=images/borders-eps-converted-to.pdf images/border
-s.eps)...executed safely (allowed).
-
-Package epstopdf Info: Result file: <images/borders-eps-converted-to.pdf>
-(epstopdf)                    date: 2016-06-16 11:09:19
-(epstopdf)                    size: 7976 bytes.
+Package epstopdf Info: Output file is already uptodate.
 
 <images/borders-eps-converted-to.pdf, id=157, 804.00375pt x 803.0pt>
 File: images/borders-eps-converted-to.pdf Graphic file (type pdf)
@@ -1565,29 +1560,45 @@ Package pdftex.def Info: ../check/unstable_002.png used on input line 8.
 
 
 
- <../check/stable_001.png (PNG copy)> <../check/unstable_002.png (PNG copy)>] [
-16
+ <../check/stable_001.png (PNG copy)> <../check/unstable_002.png (PNG copy)>]
+\openout4 = `presentazione.vrb'.
 
-] [17
+ (./presentazione.vrb
+Overfull \hbox (18.7659pt too wide) in paragraph at lines 9--10
+[][][][][][][][][][][][][][][][][][][][][][][] 
+ []
 
-] [18
+
+Overfull \hbox (9.1658pt too wide) in paragraph at lines 13--15
+[][][][][][][][][][][][][][] 
+ []
+
+) [16
+
+] <../check/time/speed.png, id=228, 481.8pt x 361.35pt>
+File: ../check/time/speed.png Graphic file (type png)
+
+<use ../check/time/speed.png>
+Package pdftex.def Info: ../check/time/speed.png used on input line 43.
+(pdftex.def)             Requested size: 240.8994pt x 180.67456pt.
+ [17
+
+ <../check/time/speed.png>] [18
 
 ] [19
-
-] [20
 
 ])
 \openout2 = `Diapositive/opengl_integration.aux'.
 
 
 (./Diapositive/opengl_integration.tex
-<images/pipeline.png, id=270, 848.16875pt x 150.5625pt>
+<images/pipeline.png, id=261, 848.16875pt x 150.5625pt>
 File: images/pipeline.png Graphic file (type png)
 
 <use images/pipeline.png>
 Package pdftex.def Info: images/pipeline.png used on input line 18.
 (pdftex.def)             Requested size: 278.83713pt x 49.49738pt.
- [21
+ [20
 
 
 
@@ -1595,7 +1606,12 @@ Package pdftex.def Info: images/pipeline.png used on input line 18.
 \openout4 = `presentazione.vrb'.
 
  (./presentazione.vrb)
-[22
+[21
+
+]
+\openout4 = `presentazione.vrb'.
+
+ (./presentazione.vrb) [22
 
 ]
 \openout4 = `presentazione.vrb'.
@@ -1610,18 +1626,13 @@ Package pdftex.def Info: images/pipeline.png used on input line 18.
 ]
 \openout4 = `presentazione.vrb'.
 
- (./presentazione.vrb) [25
-
-]
-\openout4 = `presentazione.vrb'.
-
- (./presentazione.vrb <images/uv.png, id=323, 948.54375pt x 482.80376pt>
+ (./presentazione.vrb <images/uv.png, id=314, 948.54375pt x 482.80376pt>
 File: images/uv.png Graphic file (type png)
 
 <use images/uv.png>
 Package pdftex.def Info: images/uv.png used on input line 7.
 (pdftex.def)             Requested size: 278.83713pt x 141.92491pt.
-) [26
+) [25
 
  <./images/uv.png>])
 \openout2 = `Diapositive/biblio.tex.aux'.
@@ -1649,10 +1660,10 @@ Package rerunfilecheck Info: File `presentazione.out' has not changed.
 Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 75.
  ) 
 Here is how much of TeX's memory you used:
- 20302 strings out of 493029
- 366455 string characters out of 6136235
- 462790 words of memory out of 5000000
- 23209 multiletter control sequences out of 15000+600000
+ 20390 strings out of 493029
+ 367488 string characters out of 6136235
+ 477790 words of memory out of 5000000
+ 23295 multiletter control sequences out of 15000+600000
  40450 words of font info for 97 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  56i,15n,67p,914b,1198s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -1668,10 +1679,10 @@ exmf-dist/fonts/type1/urw/helvetic/uhvb8a.pfb></usr/share/texlive/texmf-dist/fo
 nts/type1/urw/helvetic/uhvr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/ur
 w/helvetic/uhvr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/palatino/u
 plr8a.pfb>
-Output written on presentazione.pdf (26 pages, 413463 bytes).
+Output written on presentazione.pdf (25 pages, 422716 bytes).
 PDF statistics:
- 390 PDF objects out of 1000 (max. 8388607)
- 328 compressed objects within 4 object streams
- 59 named destinations out of 1000 (max. 500000)
- 116 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 382 PDF objects out of 1000 (max. 8388607)
+ 319 compressed objects within 4 object streams
+ 57 named destinations out of 1000 (max. 500000)
+ 121 words of extra memory for PDF output out of 10000 (max. 10000000)
 

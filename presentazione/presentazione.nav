@@ -43,28 +43,26 @@
 \headcommand {\beamer@framepages {18}{18}}
 \headcommand {\slideentry {3}{0}{5}{19/19}{}{0}}
 \headcommand {\beamer@framepages {19}{19}}
-\headcommand {\slideentry {3}{0}{6}{20/20}{}{0}}
-\headcommand {\beamer@framepages {20}{20}}
 \headcommand {\sectionentry {3}{Performances}{15}{Performances}{0}}
 \headcommand {\beamer@sectionpages {7}{14}}
 \headcommand {\beamer@subsectionpages {7}{14}}
-\headcommand {\slideentry {4}{0}{1}{21/21}{}{0}}
+\headcommand {\slideentry {4}{0}{1}{20/20}{}{0}}
+\headcommand {\beamer@framepages {20}{20}}
+\headcommand {\slideentry {4}{0}{2}{21/21}{}{0}}
 \headcommand {\beamer@framepages {21}{21}}
-\headcommand {\slideentry {4}{0}{2}{22/22}{}{0}}
+\headcommand {\slideentry {4}{0}{3}{22/22}{}{0}}
 \headcommand {\beamer@framepages {22}{22}}
-\headcommand {\slideentry {4}{0}{3}{23/23}{}{0}}
+\headcommand {\slideentry {4}{0}{4}{23/23}{}{0}}
 \headcommand {\beamer@framepages {23}{23}}
-\headcommand {\slideentry {4}{0}{4}{24/24}{}{0}}
+\headcommand {\slideentry {4}{0}{5}{24/24}{}{0}}
 \headcommand {\beamer@framepages {24}{24}}
-\headcommand {\slideentry {4}{0}{5}{25/25}{}{0}}
+\headcommand {\slideentry {4}{0}{6}{25/25}{}{0}}
 \headcommand {\beamer@framepages {25}{25}}
-\headcommand {\slideentry {4}{0}{6}{26/26}{}{0}}
-\headcommand {\beamer@framepages {26}{26}}
-\headcommand {\sectionentry {4}{OpenGL-CUDA interoperability}{21}{OpenGL-CUDA interoperability}{0}}
-\headcommand {\beamer@sectionpages {15}{20}}
-\headcommand {\beamer@subsectionpages {15}{20}}
-\headcommand {\beamer@partpages {1}{26}}
-\headcommand {\beamer@subsectionpages {27}{26}}
-\headcommand {\beamer@sectionpages {27}{26}}
-\headcommand {\beamer@documentpages {26}}
-\headcommand {\def \inserttotalframenumber {26}}
+\headcommand {\sectionentry {4}{OpenGL-CUDA interoperability}{20}{OpenGL-CUDA interoperability}{0}}
+\headcommand {\beamer@sectionpages {15}{19}}
+\headcommand {\beamer@subsectionpages {15}{19}}
+\headcommand {\beamer@partpages {1}{25}}
+\headcommand {\beamer@subsectionpages {26}{25}}
+\headcommand {\beamer@sectionpages {26}{25}}
+\headcommand {\beamer@documentpages {25}}
+\headcommand {\def \inserttotalframenumber {25}}

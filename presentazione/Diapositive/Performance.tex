@@ -7,28 +7,38 @@ $\Delta t = 0.001 \longrightarrow \Delta t = 0.002$
 \end{center}
 \end{frame}
 
-\begin{frame}
+\begin{frame}[fragile]
 \frametitle{Performances}
 \framesubtitle{GPU}
+\begin{lstlisting}
+Device 0: "GeForce GTX 780"
+
+CUDA Driver Version / Runtime Version          8.0 / 6.5
+CUDA Capability Major/Minor version number:    3.5
+Total amount of global memory:                 3071 MBytes
+(12) Multiprocessors, (192) CUDA Cores/MP:     2304 CUDA Cores
+GPU Clock rate:                                941 MHz
+Memory Clock rate:                             3004 Mhz
+Memory Bus Width:                              384-bit
+L2 Cache Size:                                 1572864 bytes
+
+Total amount of constant memory:               65536 bytes
+Total amount of shared memory per block:       49152 bytes
+Total number of registers available per block: 65536
+Warp size:                                     32
+Maximum number of threads per multiprocessor:  2048
+Maximum number of threads per block:           1024
+\end{lstlisting}
 \begin{center}
-descrizione della gpu usata (numero blocchi e thread eccecc)
-%\includegraphics[scale=0.4]{../check/borders_1c_01.png}
+
 \end{center}
 \end{frame}
 
 \begin{frame}
 \frametitle{Performances}
-\framesubtitle{Execution time vs blocks number}
+\framesubtitle{Execution time}
 \begin{center}
-%\includegraphics[scale=0.4]{../check/borders_1c_01.png}
-\end{center}
-\end{frame}
-
-\begin{frame}
-\frametitle{Performances}
-\framesubtitle{Execution time vs loops number}
-\begin{center}
-%\includegraphics[scale=0.4]{../check/borders_1c_01.png}
+\includegraphics[scale=0.5]{../check/time/speed.png}
 \end{center}
 \end{frame}
 
