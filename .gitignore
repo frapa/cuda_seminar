@@ -2,3 +2,13 @@
 *.swp
 *.o
 *~
+sim2d
+wall
+*.nav
+*.aux
+*.snm
+*.toc
+*.log
+*.out
+*.pdf
+*.synctex.gz
