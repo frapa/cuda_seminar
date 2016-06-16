@@ -244,7 +244,7 @@ void stepCpu(float *T, float *K)
 	// START SIMULATION
 	start_host = clock();
 
-	cpuIntegrate2D(w, h, T, K, dT);
+	cpuIntegrate2D(w+2, h+2, T, K, dT);
 
 	end_host = clock();
 
@@ -257,7 +257,7 @@ void stepCpu(float *T, float *K)
 	FILE *ftime;
 	if (loop_done == watch){
 		char nfile[257];		
-		sprintf(nfile, "check/time-%d-%d.txt", block_num.x, n_loop);
+		sprintf(nfile, "check/time-%d-%d-cpu.txt", block_num.x, n_loop);
 		//ftime = fopen("check/exe_time.txt", "a");
 		ftime = fopen(nfile, "a");
 		if (ftime == NULL){
