@@ -140,8 +140,9 @@ __device__ void loadSharedMemory2D(const UsefulConstants consts, float *T)
 	//unsigned c = 4 * n_loop / blockDim.y + 1;
 	//unsigned k = threadIdx.x + blockDim.x * threadIdx.y;
 
-	/*unsigned k = threadIdx.x + blockDim.x * threadIdx.y;
-	unsigned c = 4 / blockDim.x + 1;
+	unsigned k = threadIdx.x + blockDim.x * threadIdx.y;
+	unsigned c = 4 / blockDim.x;
+	c = c < 1 ? 1 : c; 
 	unsigned bnum = k*c / blockDim.y;
 	unsigned gid_1d_start = blockIdx.y * blockDim.y * gw
 				+ blockIdx.x * blockDim.x * n_loop;
@@ -155,7 +156,6 @@ __device__ void loadSharedMemory2D(const UsefulConstants consts, float *T)
 		unsigned j;
 		for (j = 0; j < c; ++j) {
 			local_T[offset + (j+side_id)*mul] = T[gid_1d_start + goffset + (j+side_id)*gmul];
-			d_operation[gid_1d_start + goffset + j*gmul + side_id*gmul] = 100;
 		}
 	} else if (bnum == 1) {
 		offset = lw;
@@ -166,7 +166,6 @@ __device__ void loadSharedMemory2D(const UsefulConstants consts, float *T)
 		unsigned j;
 		for (j = 0; j < c; ++j) {
 			local_T[offset + (j+side_id)*mul] = T[gid_1d_start + goffset + (j+side_id)*gmul];
-			d_operation[gid_1d_start + goffset + j*gmul + side_id*gmul] = 100;
 		}
 	} else if (bnum == 2) {
 		offset = 2*lw - 1;
@@ -177,22 +176,20 @@ __device__ void loadSharedMemory2D(const UsefulConstants consts, float *T)
 		unsigned j;
 		for (j = 0; j < c; ++j) {
 			local_T[offset + (j+side_id)*mul] = T[gid_1d_start + goffset + (j+side_id)*gmul];
-			d_operation[gid_1d_start + goffset + j*gmul + side_id*gmul] = 100;
 		}
 	} else if (bnum == 3) {
-		offset = lw * (blockDim.y + 1) + 2;
-		goffset = gw * (blockDim.y + 1) + 2;
+		offset = lw * (blockDim.y + 1) + 1;
+		goffset = gw * (blockDim.y + 1) + 1;
 		mul = gmul = 1;
 		// fill borders
 		unsigned j;
 		for (j = 0; j < c; ++j) {
 			local_T[offset + (j+side_id)*mul] = T[gid_1d_start + goffset + (j+side_id)*gmul];
-			d_operation[gid_1d_start + goffset + j*gmul + side_id*gmul] = 100;
 		}
-	}*/
+	}
 
 	// Fill the borders with just one thread, variables as before
-	unsigned k = threadIdx.x + blockDim.x * threadIdx.y;
+	/*unsigned k = threadIdx.x + blockDim.x * threadIdx.y;
 	unsigned gid_1d_start = blockIdx.y * blockDim.y * gw
 				+ blockIdx.x * blockDim.x * n_loop;
 	unsigned offset, mul, goffset, gmul;
@@ -235,7 +232,7 @@ __device__ void loadSharedMemory2D(const UsefulConstants consts, float *T)
 			local_T[offset + j*mul] = T[gid_1d_start + goffset + j*gmul];
 			//d_operation[gid_1d_start + goffset + j*gmul] = 100;
 		}	
-	}
+	}*/
 }
 
 

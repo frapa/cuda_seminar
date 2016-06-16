@@ -1,0 +1,21 @@
+set term eps
+set output "speed.eps"
+
+set linetype 1 lw 2
+set linetype 2 lw 2
+set linetype 2 lw 2
+set linetype 2 lw 2
+
+set xlabel "n loop"
+set ylabel "mean time per step"
+set logscale x 2
+set logscale y 10
+
+plot [0.9:70][0.000005:0.01] "4blocks.txt" using 1:2 with lines title "4blocks",\
+						"8blocks.txt" using 1:2 with lines title "8blocks",\
+						"16blocks.txt" using 1:2 with lines title "16blocks",\
+						"32blocks.txt" using 1:2 with lines title "32blocks"
+
+set term png
+set output "speed.png"
+replot

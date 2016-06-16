@@ -1,0 +1,20 @@
+
+Number of loops: 4
+Total Time: 0.153249
+Mean Time per Step: 0.000153
+
+Number of loops: 8
+Total Time: 0.261119
+Mean Time per Step: 0.000261
+
+Number of loops: 16
+Total Time: 0.370228
+Mean Time per Step: 0.000370
+
+Number of loops: 32
+Total Time: 0.738796
+Mean Time per Step: 0.000739
+
+Number of loops: 64
+Total Time: 1.091608
+Mean Time per Step: 0.001092
