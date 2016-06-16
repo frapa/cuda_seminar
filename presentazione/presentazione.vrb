@@ -1,0 +1,34 @@
+
+\frametitle{Mapping resources}
+
+\vspace{3mm}
+
+When CUDA writes to resources, it needs to map the resource,
+to avoid conflicts with OpenGL.
+
+\vspace{2mm}
+
+\begin{lstlisting}
+// cudaArray is an opaque object
+cudaArray *texture_array;
+float *image;
+
+// Enables access from CUDA
+cudaGraphicsMapResources(1, &texture_cuda, 0);
+
+// Get pointer of the texture
+cudaGraphicsSubResourceGetMappedArray(
+	&texture_array, texture_cuda, 0, 0);
+
+/* ... do whatever you want with CUDA on 'image' ... */
+
+/* Copy cuda array to texture position
+	NOTE: no transfer between GPU and CPU */
+cudaMemcpyToArray(texture_array, 0, 0, image,
+	size, cudaMemcpyDeviceToDevice);
+
+// Frees resource for use with OpenGL
+cudaGraphicsUnmapResources(1, &texture_cuda, 0);
+
+\end{lstlisting}
+

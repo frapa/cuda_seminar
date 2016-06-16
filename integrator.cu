@@ -236,19 +236,21 @@ __device__ void loadSharedMemory2D(const UsefulConstants consts, float *T)
 }
 
 
-__device__ void drawToTexture(const UsefulConstants consts, float * T, uchar4 *tex)
+__device__ void drawToTexture(const UsefulConstants consts, float *T, float *K,
+		uchar4 *tex, char show_cond)
 {
 	// Did I already say it's just a repetition?
 	int2 gid = consts.gid;
 	unsigned gw = consts.gw - 2; 
 	unsigned gid_1d = consts.gid_1d;
+	unsigned gid_1d_nb = consts.gid_1d_nb;
 	
 	unsigned i, idx;
 	for (i = 0; i < consts.n_loop; ++i) {
 		idx = gid.y * gw + gid.x + i;
 		tex[idx].x = T[gid_1d + i];
-		tex[idx].y = T[gid_1d + i];
-		tex[idx].z = T[gid_1d + i];
+		tex[idx].y = show_cond ? K[gid_1d_nb + i] * 1e4 : 0;
+		tex[idx].z = 0;
 		tex[idx].w = 255;
 	}
 }
@@ -270,7 +272,7 @@ __device__ void drawToTexture(const UsefulConstants consts, float * T, uchar4 *t
  * copy_tex: Copy texture?
  */
 __global__ void stepSimulation2D(float *T, float *K, float *dT, unsigned n_loop, 
-				    uchar4 *tex, char copy_tex) 
+				    uchar4 *tex, char copy_tex, char show_cond) 
 {
 	// Calculate some constants useful around
 	int2 gid;	// for each thread, starting T[i,j] not considering borders
@@ -312,7 +314,7 @@ __global__ void stepSimulation2D(float *T, float *K, float *dT, unsigned n_loop,
 	
 	// copy data back to global memory and fill the texture for visualization with OpenGL
 	if (copy_tex) {
-	    drawToTexture(consts, T, tex);
+	    drawToTexture(consts, T, K, tex, show_cond);
 	}
 	
 	__syncthreads();

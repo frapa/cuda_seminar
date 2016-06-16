@@ -226,11 +226,8 @@ void * map_array()
 cudaArray * map_texture()
 {
 	cudaArray *texture_ptr;
-	//size_t array_size;
 
 	// Enables access from CUDA
-	//cudaGLMapBufferObject(&texture_ptr, texture_pbo_gl);
-	//cudaGraphicsMapResources(1, &texture_pbo_cuda, 0);
 	cudaGraphicsMapResources(1, &texture_cuda, 0);
 
 #ifdef DEBUG	
@@ -243,7 +240,6 @@ cudaArray * map_texture()
 	
 	// Get pointer of the texture
 	cudaGraphicsSubResourceGetMappedArray(&texture_ptr, texture_cuda, 0, 0);
-	//cudaError_t error = cudaGraphicsResourceGetMappedPointer(&texture_ptr, &array_size, texture_pbo_cuda);
 
 #ifdef DEBUG	
 	error = cudaDeviceSynchronize();

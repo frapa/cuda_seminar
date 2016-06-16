@@ -26,6 +26,7 @@ uchar4 *image;
 double cpu_time, cpu_step;
 size_t temp_size, op_size;
 unsigned graphics = 0, iterations_per_frame = 24;
+char show_cond = 0;
 
 void readTiff(char *filename, float **raster, unsigned *w, unsigned *h, 
 	      float scale)
@@ -84,6 +85,9 @@ void on_key_pressed(unsigned char key, int x, int y)
                 interpolate_array(dT, tmp, size, heating_level);
                 cudaMemcpy(dT_device, tmp, size * sizeof(float), cudaMemcpyHostToDevice);
             }
+            break;
+		case ' ':
+			show_cond = !show_cond;
             break;
     }
 
@@ -171,10 +175,10 @@ void step()
 	for (z = 0; z < iterations_per_frame; ++z) {
 	    if (z == iterations_per_frame-1) {
 		    stepSimulation2D<<<block_num, thread_num, size_shared>>>
-			    (T_device, K_device, dT_device, n_loop, image, 1);
+			    (T_device, K_device, dT_device, n_loop, image, 1, show_cond);
 	    } else {
 		    stepSimulation2D<<<block_num, thread_num, size_shared>>>
-			    (T_device, K_device, dT_device, n_loop, image, 0);
+			    (T_device, K_device, dT_device, n_loop, image, 0, show_cond);
 	    }
 	}
 	cudaError_t error = cudaDeviceSynchronize();
