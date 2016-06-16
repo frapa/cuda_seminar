@@ -1,0 +1,18 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+Conclusions	presentazione.tex	/^\\include{Diapositive\/opengl_integration}$/;"	s
+Diapositive  Code	presentazione.tex	/^\\section{Our Code}$/;"	i
+Diapositive  Equation	presentazione.tex	/^\\section{Heat Equation}$/;"	i
+Diapositive  Intro	presentazione.tex	/^\\begin{document}$/;"	i
+Diapositive  Performance	presentazione.tex	/^\\section{Performances}$/;"	i
+Diapositive  biblio.tex	presentazione.tex	/^\\section{References}$/;"	i
+Diapositive  opengl_integration	presentazione.tex	/^\\section{OpenGL-CUDA interoperability}$/;"	i
+Heat Equation	presentazione.tex	/^\\include{Diapositive\/Intro}$/;"	s
+OpenGL-CUDA interoperability	presentazione.tex	/^\\include{Diapositive\/Performance}$/;"	s
+Our Code	presentazione.tex	/^\\include{Diapositive\/Equation}$/;"	s
+Performances	presentazione.tex	/^\\include{Diapositive\/Code}$/;"	s
+References	presentazione.tex	/^\\section{Conclusions}$/;"	s
