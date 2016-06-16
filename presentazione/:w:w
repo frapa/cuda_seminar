@@ -9,14 +9,13 @@
 \usepackage{amssymb}
 \usepackage{graphicx}
 \usepackage{listings}
-\usepackage{pxfonts}
 
-\lstset{language=C,basicstyle=\ttfamily\scriptsize,
-                keywordstyle=\color{blue},
-				identifierstyle=\bfseries,
-                stringstyle=\color{red},
-                commentstyle=\color{blue},
-}
+\lstset{numbers=left,language=C,basicstyle=\ttfamily\tiny,
+                keywordstyle=\color{blue}\ttfamily,
+				identifierstyle=\color{darkblue}\ttfamily,
+                stringstyle=\color{red}\ttfamily,
+                commentstyle=\color{green}\ttfamily,
+                morecomment=[l][\color{magenta}]{\#}}
 
 %\usetheme{Berkeley}
 \usetheme{Goettingen}
