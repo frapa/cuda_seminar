@@ -28,7 +28,7 @@ void cpuIntegrate2D(unsigned w, unsigned h, float *T, float *K, float *dT)
 
 	for (i = 1; i < h-1 ; ++i) {
 		for (j = 1; j < w-1; ++j) {
-			T[i*w+j] = temp[i*w+j]
+			T[i*w+j] = temp[i*w+j];
 		}
 	}
 
