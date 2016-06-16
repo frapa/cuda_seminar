@@ -8,6 +8,7 @@
 
 #include "integrator.h"
 #include "gl_helper.h"
+#include "cpu.h"
 
 //#define DEBUG
 #define TIME
@@ -26,7 +27,7 @@ uchar4 *image;
 double cpu_time, cpu_step;
 size_t temp_size, op_size;
 unsigned graphics = 0, iterations_per_frame = 24;
-char show_cond = 0;
+char show_cond = 0, cpu = 0;
 
 void readTiff(char *filename, float **raster, unsigned *w, unsigned *h, 
 	      float scale)
@@ -100,8 +101,9 @@ void on_key_pressed(unsigned char key, int x, int y)
 
 void step()
 {
-	//printf("dT: %p\n", dT);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	if (!graphics) {
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	}
 
 	cudaArray *tex = map_texture();
 	clock_t start_host, end_host; // Used to check time of execution
@@ -235,6 +237,43 @@ void step()
 	}
 }
 
+void stepCpu(float *T, float *K)
+{
+	clock_t start_host, end_host; // Used to check time of execution
+
+	// START SIMULATION
+	start_host = clock();
+
+	cpuIntegrate2D(w, h, T, K, dT);
+
+	end_host = clock();
+
+	cpu_step = ((double)  (end_host - start_host));
+	cpu_time += cpu_step / CLOCKS_PER_SEC;
+	++loop_done;
+
+	// Print time statistics
+#ifdef TIME	
+	FILE *ftime;
+	if (loop_done == watch){
+		char nfile[257];		
+		sprintf(nfile, "check/time-%d-%d.txt", block_num.x, n_loop);
+		//ftime = fopen("check/exe_time.txt", "a");
+		ftime = fopen(nfile, "a");
+		if (ftime == NULL){
+		  	printf("\nError while opening file mean_time.txt\n");
+		  	perror("Error while opnening file mean_time.txt");
+		  	exit(1);
+		}
+		fprintf(ftime, "%d    %f\n", n_loop, cpu_time/(double)loop_done);
+		fclose(ftime);
+		
+		printf("Time saved\n");
+	}
+#endif
+}
+
+
 int main(int argc, char **argv)
 {
 	// First check if a directory was given
@@ -284,6 +323,10 @@ int main(int argc, char **argv)
 		        iterations_per_frame = 1;
 	        } else if (!strcmp(argv[j], "-f")) {
 		        sscanf(argv[j+1], "%u", &iterations_per_frame);
+	        } else if (!strcmp(argv[j], "-cpu")) {
+		        sscanf(argv[j+1], "%u", &graphics);
+				iterations_per_frame = 1;
+				cpu = 1;
 	        }
 	    }
 	}
@@ -310,21 +353,23 @@ int main(int argc, char **argv)
 	printf("Shared memory: %.2f Kb\n", size_shared / 1024.f);
 	
 	// Copy input to device 
-	cudaMalloc(&T_device, temp_size);
-	cudaMemcpy(T_device, T, temp_size, cudaMemcpyHostToDevice);
-	
-	cudaMalloc(&K_device, param_size);
-	cudaMemcpy(K_device, K, param_size, cudaMemcpyHostToDevice);
-	
-	cudaMalloc(&dT_device, param_size);
-	cudaMemcpy(dT_device, tmp, param_size, cudaMemcpyHostToDevice);
+	if (!cpu) {
+		cudaMalloc(&T_device, temp_size);
+		cudaMemcpy(T_device, T, temp_size, cudaMemcpyHostToDevice);
+		
+		cudaMalloc(&K_device, param_size);
+		cudaMemcpy(K_device, K, param_size, cudaMemcpyHostToDevice);
+		
+		cudaMalloc(&dT_device, param_size);
+		cudaMemcpy(dT_device, tmp, param_size, cudaMemcpyHostToDevice);
 
-	cudaMalloc(&d_operation, op_size);
-	cudaMemcpy(d_operation, operation, op_size, cudaMemcpyHostToDevice);
+		cudaMalloc(&d_operation, op_size);
+		cudaMemcpy(d_operation, operation, op_size, cudaMemcpyHostToDevice);
 
-	cudaMalloc(&image, w*h*4);
+		cudaMalloc(&image, w*h*4);
 
-	cudaSetDevice(0);
+		cudaSetDevice(0);
+	}
 
 	// Now that we are done loading the simulation, we start OpenGL
 	if (!graphics) {
@@ -344,11 +389,19 @@ int main(int argc, char **argv)
 
 	if (!graphics) {
 		glutMainLoop();
-	} else {
+	} else if (!cpu) {
 		unsigned h;
 		double start = clock();
 		for (h = 0; h < graphics; ++h) {
 			step();
+		}
+		double time = (clock() - start) / CLOCKS_PER_SEC;
+		printf("\nTotal time: %f s\n", time);
+	} else {
+		unsigned h;
+		double start = clock();
+		for (h = 0; h < graphics; ++h) {
+			stepCpu(T, K);
 		}
 		double time = (clock() - start) / CLOCKS_PER_SEC;
 		printf("\nTotal time: %f s\n", time);

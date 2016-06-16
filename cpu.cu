@@ -1,3 +1,5 @@
+#include "cpu.h"
+
 /*******************************************************************************
  * STEP SIMULATION 2D
  *******************************************************************************
@@ -10,16 +12,8 @@
  * n_loop:  How many pixels in a row should each thread compute. 
  * 	    must be exact fraction of blockDim.x;
  */
-void integrate2D(unsigned w, unsigned h, float *T, float *K, float *dT)
+void cpuIntegrate2D(unsigned w, unsigned h, float *T, float *K, float *dT)
 {
-	// convolve local_T with the laplacian operator:
-	//
-	//     0  1  0
-	//     1 -4  1
-	//     0  1  0
-	//
-	// and save the result in local_result
-	// come mai non usiamo local_T e poi salviamo tutto indietro? 
 	unsigned i, j;
 	for (i = 1; i < h-1 ; ++i) {
 		for (j = 1; j < w-1; ++j){
@@ -29,4 +23,20 @@ void integrate2D(unsigned w, unsigned h, float *T, float *K, float *dT)
 						+ dT[(i-1)*(w-2)+(j-1)]; 
 		}
 	}
+}
+
+void cpuIntegrate2D_fft()
+{
+	unsigned N = 1024;
+	fftw_complex *in, *out;
+	fftw_plan p;
+
+ 	in = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
+ 	out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * N);
+ 	p = fftw_plan_dft_1d(N, in, out, FFTW_FORWARD, FFTW_ESTIMATE);
+
+ 	fftw_execute(p); /* repeat as needed */
+
+ 	fftw_destroy_plan(p);
+ 	fftw_free(in); fftw_free(out);
 }
